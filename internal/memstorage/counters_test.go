@@ -2,10 +2,10 @@ package memstorage
 
 import "testing"
 
-const TEST_COUNTER = "TEST_COUNTER"
-const TEST_VALUE = 10
-
 func TestCounters(t *testing.T) {
+	const TEST_COUNTER = "TEST_COUNTER"
+	const TEST_VALUE CounterMetricValue = 10
+
 	memStorage := NewMemStorage()
 	memStorage.AddCounterMetric(TEST_COUNTER, TEST_VALUE)
 	val, wasFound := memStorage.GetCounterMetricValue(TEST_COUNTER)
