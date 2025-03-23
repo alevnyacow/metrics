@@ -3,7 +3,7 @@ package memstorage
 import "testing"
 
 func TestGauges(t *testing.T) {
-	const TEST_GAUGE = "TEST_COUNTER"
+	const TEST_GAUGE = "TEST_GAUGE"
 	const TEST_VALUE GaugeMetricValue = 10
 
 	memStorage := NewMemStorage()
