@@ -1,5 +1,8 @@
 package metricsapi
 
+// Path parsing utility helpers for
+// update POST request.
+
 import (
 	"net/http"
 	"strconv"
