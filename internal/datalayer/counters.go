@@ -1,4 +1,4 @@
-package memstorage
+package datalayer
 
 func (memstorage *MemStorage) GetCounterMetricValue(key CounterMetricName) (value CounterMetricValue, wasFound bool) {
 	value, wasFound = memstorage.counters[key]

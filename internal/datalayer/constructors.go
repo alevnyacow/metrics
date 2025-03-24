@@ -1,4 +1,4 @@
-package memstorage
+package datalayer
 
 // Returns prepared MemStorage instanse.
 func NewMemStorage() (instanse *MemStorage) {

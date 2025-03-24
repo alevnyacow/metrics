@@ -1,4 +1,4 @@
-package memstorage
+package datalayer
 
 import "testing"
 
