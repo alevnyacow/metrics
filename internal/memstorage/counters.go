@@ -5,15 +5,15 @@ func (memstorage *MemStorage) GetCounterMetricValue(key CounterMetricName) (valu
 	return
 }
 
-// If Counters contained record with given key, its value
-// will be summed with given value. Otherwise, new
-// record will be generated in Counters with given key
-// and given value.
-func (memstorage *MemStorage) AddCounterMetric(key CounterMetricName, value CounterMetricValue) (createdNewCounterMetric bool) {
-	oldValue, foundMetricValue := memstorage.counters[key]
-	createdNewCounterMetric = !foundMetricValue
+func (memstorage *MemStorage) AddCounterMetric(key CounterMetricName, value CounterMetricValue) (success bool) {
+	success = value > 0
+	if !success {
+		return
+	}
 
-	if createdNewCounterMetric {
+	oldValue, foundMetricValue := memstorage.counters[key]
+
+	if !foundMetricValue {
 		memstorage.counters[key] = value
 		return
 	}
