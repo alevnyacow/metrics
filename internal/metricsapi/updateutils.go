@@ -19,8 +19,8 @@ type gaugePathParams struct {
 
 func getMetricTypeFromRequest(request *http.Request) (metricType datalayer.MetricType, success bool) {
 	pathParamToMetricType := map[string]datalayer.MetricType{
-		"gauge":   datalayer.GAUGE_METRIC,
-		"counter": datalayer.COUNTER_METRIC,
+		"gauge":   datalayer.GaugeMetricType,
+		"counter": datalayer.CounterMetricType,
 	}
 
 	metricTypeFromPath := request.PathValue("type")

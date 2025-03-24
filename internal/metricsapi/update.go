@@ -21,7 +21,7 @@ func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
 			return
 		}
 
-		if metricType == datalayer.COUNTER_METRIC {
+		if metricType == datalayer.CounterMetricType {
 			counterPayload, counterPayloadParsingSuccess := getCounterPayloadFromRequest(request)
 			if !counterPayloadParsingSuccess {
 				responseWriter.WriteHeader(http.StatusNotFound)

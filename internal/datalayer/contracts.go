@@ -3,8 +3,8 @@ package datalayer
 type MetricType string
 
 const (
-	GAUGE_METRIC   MetricType = "GAUGE"
-	COUNTER_METRIC MetricType = "COUNTER"
+	GaugeMetricType   MetricType = "GAUGE"
+	CounterMetricType MetricType = "COUNTER"
 )
 
 type GaugeMetricName string
