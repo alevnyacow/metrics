@@ -24,7 +24,7 @@ func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
 		if metricType == datalayer.COUNTER_METRIC {
 			counterPayload, counterPayloadParsingSuccess := getCounterPayloadFromRequest(request)
 			if !counterPayloadParsingSuccess {
-				responseWriter.WriteHeader(http.StatusBadRequest)
+				responseWriter.WriteHeader(http.StatusNotFound)
 				return
 			}
 			dl.AddCounterMetric(counterPayload.name, counterPayload.valueCounter)
@@ -33,7 +33,7 @@ func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
 		gaugePayload, gaugePayloadParsingSuccess := getGaugePayloadFromRequest(request)
 
 		if !gaugePayloadParsingSuccess {
-			responseWriter.WriteHeader(http.StatusBadRequest)
+			responseWriter.WriteHeader(http.StatusNotFound)
 			return
 		}
 
