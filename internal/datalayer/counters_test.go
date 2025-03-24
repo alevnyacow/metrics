@@ -3,24 +3,24 @@ package datalayer
 import "testing"
 
 func TestCounters(t *testing.T) {
-	const TEST_COUNTER = "TEST_COUNTER"
-	const TEST_VALUE CounterMetricValue = 10
+	const testCounterName = "testCounterName"
+	const testCounterValue CounterMetricValue = 10
 
 	memStorage := NewMemStorage()
-	memStorage.AddCounterMetric(TEST_COUNTER, TEST_VALUE)
-	val, wasFound := memStorage.GetCounterMetricValue(TEST_COUNTER)
+	memStorage.AddCounterMetric(testCounterName, testCounterValue)
+	val, wasFound := memStorage.GetCounterMetricValue(testCounterName)
 	if !wasFound {
-		t.Errorf("%s was not found after creating", TEST_COUNTER)
+		t.Errorf("%s was not found after creating", testCounterName)
 	}
-	if val != TEST_VALUE {
-		t.Errorf("Expected %s to be %d and got %d", TEST_COUNTER, TEST_VALUE, val)
+	if val != testCounterValue {
+		t.Errorf("Expected %s to be %d and got %d", testCounterName, testCounterValue, val)
 	}
-	memStorage.AddCounterMetric(TEST_COUNTER, TEST_VALUE)
-	valAfterAdding, wasFoundAfterAdding := memStorage.GetCounterMetricValue(TEST_COUNTER)
+	memStorage.AddCounterMetric(testCounterName, testCounterValue)
+	valAfterAdding, wasFoundAfterAdding := memStorage.GetCounterMetricValue(testCounterName)
 	if !wasFoundAfterAdding {
-		t.Errorf("%s was not found after modifying", TEST_COUNTER)
+		t.Errorf("%s was not found after modifying", testCounterName)
 	}
-	if valAfterAdding != TEST_VALUE*2 {
-		t.Errorf("Expected %s to be %d and got %d", TEST_COUNTER, TEST_VALUE*2, val)
+	if valAfterAdding != testCounterValue*2 {
+		t.Errorf("Expected %s to be %d and got %d", testCounterName, testCounterValue*2, val)
 	}
 }

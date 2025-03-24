@@ -3,24 +3,24 @@ package datalayer
 import "testing"
 
 func TestGauges(t *testing.T) {
-	const TEST_GAUGE = "TEST_GAUGE"
-	const TEST_VALUE GaugeMetricValue = 10
+	const testGaugeName = "testGaugeName"
+	const testGaugeValue GaugeMetricValue = 10
 
 	memStorage := NewMemStorage()
-	memStorage.SetGaugeMetric(TEST_GAUGE, TEST_VALUE)
-	val, wasFound := memStorage.GetGaugeMetricValue(TEST_GAUGE)
+	memStorage.SetGaugeMetric(testGaugeName, testGaugeValue)
+	val, wasFound := memStorage.GetGaugeMetricValue(testGaugeName)
 	if !wasFound {
-		t.Errorf("%s was not found after creating", TEST_GAUGE)
+		t.Errorf("%s was not found after creating", testGaugeName)
 	}
-	if val != TEST_VALUE {
-		t.Errorf("Expected %s to be %f and got %f", TEST_GAUGE, TEST_VALUE, val)
+	if val != testGaugeValue {
+		t.Errorf("Expected %s to be %f and got %f", testGaugeName, testGaugeValue, val)
 	}
-	memStorage.SetGaugeMetric(TEST_GAUGE, TEST_VALUE+1)
-	valAfterAdding, wasFoundAfterAdding := memStorage.GetGaugeMetricValue(TEST_GAUGE)
+	memStorage.SetGaugeMetric(testGaugeName, testGaugeValue+1)
+	valAfterAdding, wasFoundAfterAdding := memStorage.GetGaugeMetricValue(testGaugeName)
 	if !wasFoundAfterAdding {
-		t.Errorf("%s was not found after modifying", TEST_GAUGE)
+		t.Errorf("%s was not found after modifying", testGaugeName)
 	}
-	if valAfterAdding != TEST_VALUE+1 {
-		t.Errorf("Expected %s to be %f and got %f", TEST_GAUGE, TEST_VALUE+1, valAfterAdding)
+	if valAfterAdding != testGaugeValue+1 {
+		t.Errorf("Expected %s to be %f and got %f", testGaugeName, testGaugeValue+1, valAfterAdding)
 	}
 }
