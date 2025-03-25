@@ -2,13 +2,13 @@
 
 ## packages summary
 
-### datalayer
-
-Abstract DL contracts.
-
 ### api
 
 Provides Metrics API controller injection in http.ServeMux.
+
+### datalayer
+
+Abstract DL contracts.
 
 ### generator
 
