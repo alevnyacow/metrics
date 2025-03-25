@@ -11,7 +11,6 @@ func newGeneratorCallback(counters *generator.Counters, gauges *generator.Gauges
 	return func() {
 		*counters = generator.GenerateCounters()
 		*gauges = generator.GenerateGauges()
-		fmt.Print("SUP")
 	}
 }
 
@@ -86,8 +85,8 @@ func main() {
 	generatorCallback := newGeneratorCallback(counterMetrics, gaugeMetrics)
 	senderCallback := newSenderCallback(apiRoot, counterMetrics, gaugeMetrics)
 
-	go utils.RepetitiveCall(pollInterval, generatorCallback)()
-	go utils.RepetitiveCall(reportInterval, senderCallback)()
+	go utils.InfiniteRepetitiveCall(pollInterval, generatorCallback)()
+	go utils.InfiniteRepetitiveCall(reportInterval, senderCallback)()
 
 	select {}
 }
