@@ -16,7 +16,7 @@ func generateMetrics(intervalInSeconds int, counters *generator.Counters, gauges
 	}
 }
 
-func sendMetrics(intervalInSeconds int, apiRoot string, counters generator.WithLinksGeneration, gauges generator.WithLinksGeneration) {
+func sendMetrics(intervalInSeconds int, apiRoot string, counters generator.WithLinks, gauges generator.WithLinks) {
 	for {
 		time.Sleep(time.Duration(intervalInSeconds) * time.Second)
 

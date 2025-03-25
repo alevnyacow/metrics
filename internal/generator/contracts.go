@@ -37,9 +37,9 @@ type Counters struct {
 	PollCount datalayer.CounterValue
 }
 
-type WithLinksGeneration interface {
+type WithLinks interface {
 	Links(apiRoot string) (links []string)
 }
 
-var _ WithLinksGeneration = (*Counters)(nil)
-var _ WithLinksGeneration = (*Gauges)(nil)
+var _ WithLinks = (*Counters)(nil)
+var _ WithLinks = (*Gauges)(nil)
