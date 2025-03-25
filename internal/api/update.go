@@ -24,7 +24,7 @@ func processUpdatePathParsingResult(parsingResult updatePathParsingResult, respo
 	return
 }
 
-func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
+func newUpdateMetricsDataHandler(dl datalayer.DataLayer) http.Handler {
 	// POST "/update/{type}/{name}/{value}"
 	return http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodPost {

@@ -12,4 +12,4 @@ type MemStorage struct {
 	counters map[datalayer.CounterName]datalayer.CounterValue
 }
 
-var _ datalayer.MetricsDataLayer = (*MemStorage)(nil)
+var _ datalayer.DataLayer = (*MemStorage)(nil)

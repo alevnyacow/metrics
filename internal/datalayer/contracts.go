@@ -6,8 +6,8 @@ type GaugeValue float64
 type CounterName string
 type CounterValue int64
 
-// Interface of metrics data layer.
-type MetricsDataLayer interface {
+// Interface of counters repository.
+type CountersRepository interface {
 	// If Counters contained record with given key, its value
 	// will be summed with given value. Otherwise, new
 	// record will be generated in Counters with given key
@@ -18,10 +18,22 @@ type MetricsDataLayer interface {
 	GetCounterValue(key CounterName) (value CounterValue, wasFound bool)
 	// Returns gauge metric value and status flag showing if
 	// value was found.
+}
+
+// Interface of gauges repository.
+type GaugesRepository interface {
+	// Returns gauge metric value and status flag showing if
+	// value was found.
 	GetGaugeValue(key GaugeName) (value GaugeValue, wasFound bool)
 	// If Gauges contained record with given key, its value
 	// will be rewritten with given value. Otherwise, new
 	// record will be generated in Gauges with given key
 	// and given value.
 	SetGaugeMetric(key GaugeName, value GaugeValue) (success bool)
+}
+
+// Interface of metrics data layer.
+type DataLayer interface {
+	CountersRepository
+	GaugesRepository
 }
