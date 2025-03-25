@@ -1,6 +1,9 @@
 package generator
 
-import "github.com/alevnyacow/metrics/internal/datalayer"
+import (
+	"github.com/alevnyacow/metrics/internal/datalayer"
+	"github.com/alevnyacow/metrics/internal/utils"
+)
 
 type Gauges struct {
 	Alloc,
@@ -37,9 +40,5 @@ type Counters struct {
 	PollCount datalayer.CounterValue
 }
 
-type WithLinks interface {
-	Links(apiRoot string) (links []string)
-}
-
-var _ WithLinks = (*Counters)(nil)
-var _ WithLinks = (*Gauges)(nil)
+var _ utils.WithLinks = (*Counters)(nil)
+var _ utils.WithLinks = (*Gauges)(nil)

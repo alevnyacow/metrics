@@ -15,7 +15,7 @@ func newGeneratorCallback(counters *generator.Counters, gauges *generator.Gauges
 	}
 }
 
-func newSenderCallback(apiRoot string, counters generator.WithLinks, gauges generator.WithLinks) func() {
+func newSenderCallback(apiRoot string, counters utils.WithLinks, gauges utils.WithLinks) func() {
 	return func() {
 		countersLinks := counters.Links(apiRoot)
 		// gaugesLinks := gauges.Links(apiRoot)
