@@ -13,16 +13,6 @@ type GaugeValue float64
 type CounterName string
 type CounterValue int64
 
-// Inner structure of memory storage struct.
-type MemStorage struct {
-	// Map of gauge metrics with keys of gauge metric names
-	// and values of gauge metric values.
-	gauges map[GaugeName]GaugeValue
-	// Map of counter metrics with keys of counter metric names
-	// and values of counter metric values.
-	counters map[CounterName]CounterValue
-}
-
 // Interface of metrics data layer.
 type MetricsDataLayer interface {
 	// If Counters contained record with given key, its value
