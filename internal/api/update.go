@@ -39,7 +39,7 @@ func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
 			return
 		}
 
-		if metricType == datalayer.CounterMetricType {
+		if metricType == counterMetricType {
 			counterPayload, counterPayloadParsingResult := parseCounterPayloadFromRequest(request)
 			isInErrorState := processUpdatePathParsingResult(counterPayloadParsingResult, responseWriter)
 			if !isInErrorState {

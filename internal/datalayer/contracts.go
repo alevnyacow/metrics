@@ -1,12 +1,5 @@
 package datalayer
 
-type MetricType string
-
-const (
-	GaugeMetricType   MetricType = "GAUGE"
-	CounterMetricType MetricType = "COUNTER"
-)
-
 type GaugeName string
 type GaugeValue float64
 

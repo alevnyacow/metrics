@@ -25,10 +25,17 @@ type updatePathParsingResult struct {
 	parsedValue bool
 }
 
-func parseMetricTypeFromRequest(request *http.Request) (metricType datalayer.MetricType, success bool) {
-	pathParamToMetricType := map[string]datalayer.MetricType{
-		"gauge":   datalayer.GaugeMetricType,
-		"counter": datalayer.CounterMetricType,
+type metric string
+
+const (
+	gaugeMetricType   metric = "GAUGE"
+	counterMetricType metric = "COUNTER"
+)
+
+func parseMetricTypeFromRequest(request *http.Request) (metricType metric, success bool) {
+	pathParamToMetricType := map[string]metric{
+		"gauge":   gaugeMetricType,
+		"counter": counterMetricType,
 	}
 
 	metricTypeFromPath := request.PathValue("type")
@@ -40,6 +47,7 @@ func parseMetricTypeFromRequest(request *http.Request) (metricType datalayer.Met
 func parseMetricNameAndStringValue(request *http.Request) (metricName string, metricValueAsString string) {
 	metricName = request.PathValue("name")
 	metricValueAsString = request.PathValue("value")
+
 	return
 }
 
