@@ -1,4 +1,4 @@
-package metricsapi
+package api
 
 import (
 	"net/http"

@@ -1,8 +1,8 @@
-package metricsgenerator
+package generator
 
 import "github.com/alevnyacow/metrics/internal/datalayer"
 
-type GaugeMetrics struct {
+type Gauges struct {
 	Alloc,
 	BuckHashSys,
 	Frees,
@@ -33,7 +33,7 @@ type GaugeMetrics struct {
 	RandomValue datalayer.GaugeMetricValue
 }
 
-type CounterMetrics struct {
+type Counters struct {
 	PollCount datalayer.CounterMetricValue
 }
 
@@ -41,5 +41,5 @@ type WithLinksGeneration interface {
 	Links(apiRoot string) (links []string)
 }
 
-var _ WithLinksGeneration = (*CounterMetrics)(nil)
-var _ WithLinksGeneration = (*GaugeMetrics)(nil)
+var _ WithLinksGeneration = (*Counters)(nil)
+var _ WithLinksGeneration = (*Gauges)(nil)

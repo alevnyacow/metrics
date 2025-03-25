@@ -1,4 +1,4 @@
-package metricsapi
+package api
 
 // Path parsing utility helpers for
 // update POST request.

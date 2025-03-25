@@ -6,10 +6,10 @@
 
 Abstract DL contracts and in-memory DL implementation.
 
-### metricsapi
+### api
 
 Provides Metrics API controller injection in http.ServeMux.
 
-### metricsgenerator
+### generator
 
 Functionality of metrics generation and obtaining api links to update them.

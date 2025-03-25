@@ -1,6 +1,7 @@
-package metricsapi
+package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/alevnyacow/metrics/internal/datalayer"
@@ -45,6 +46,7 @@ func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
 				dl.AddCounterMetric(counterPayload.name, counterPayload.valueCounter)
 				responseWriter.WriteHeader(http.StatusOK)
 			}
+			fmt.Println(dl.GetCounterMetricValue(datalayer.CounterMetricName(counterPayload.name)))
 			return
 		}
 

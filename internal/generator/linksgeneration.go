@@ -1,8 +1,8 @@
-package metricsgenerator
+package generator
 
 import "github.com/alevnyacow/metrics/internal/datalayer"
 
-func (counterMetrics *CounterMetrics) Links(apiRoot string) (links []string) {
+func (counterMetrics *Counters) Links(apiRoot string) (links []string) {
 	// Mapping of counter metrics data to their request names.
 	counterRequestNamesMapping := map[string]datalayer.CounterMetricValue{
 		"PollCount": counterMetrics.PollCount,
@@ -18,7 +18,7 @@ func (counterMetrics *CounterMetrics) Links(apiRoot string) (links []string) {
 	return
 }
 
-func (gaugeMetrics *GaugeMetrics) Links(apiRoot string) (links []string) {
+func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
 	// Mapping of gauge metrics data to their request names.
 	gaugeRequestNamesMapping := map[string]datalayer.GaugeMetricValue{
 		"Alloc":         gaugeMetrics.Alloc,

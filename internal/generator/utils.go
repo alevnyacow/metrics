@@ -1,4 +1,4 @@
-package metricsgenerator
+package generator
 
 import (
 	"strconv"

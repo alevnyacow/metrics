@@ -1,4 +1,4 @@
-package metricsgenerator
+package generator
 
 import (
 	"math/rand/v2"
@@ -7,11 +7,11 @@ import (
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
-func GenerateGauges() GaugeMetrics {
+func GenerateGauges() Gauges {
 	var stats runtime.MemStats
 	runtime.ReadMemStats(&stats)
 
-	return GaugeMetrics{
+	return Gauges{
 		Alloc:         datalayer.GaugeMetricValue(stats.Alloc),
 		BuckHashSys:   datalayer.GaugeMetricValue(stats.BuckHashSys),
 		Frees:         datalayer.GaugeMetricValue(stats.Frees),
