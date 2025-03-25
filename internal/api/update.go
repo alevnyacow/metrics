@@ -46,7 +46,7 @@ func newUpdateMetricsDataHandler(dl datalayer.MetricsDataLayer) http.Handler {
 				dl.AddCounterMetric(counterPayload.name, counterPayload.valueCounter)
 				responseWriter.WriteHeader(http.StatusOK)
 			}
-			fmt.Println(dl.GetCounterMetricValue(datalayer.CounterMetricName(counterPayload.name)))
+			fmt.Println(dl.GetCounterValue(datalayer.CounterName(counterPayload.name)))
 			return
 		}
 

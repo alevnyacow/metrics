@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/alevnyacow/metrics/internal/api"
-	"github.com/alevnyacow/metrics/internal/datalayer"
+	"github.com/alevnyacow/metrics/internal/memstorage"
 )
 
 func metricsServeMux() (mux *http.ServeMux) {
 	mux = http.NewServeMux()
-	dl := datalayer.NewMemStorage()
+	dl := memstorage.NewMemStorage()
 	metricsAPIInjector := api.NewMetricsAPIInjector(dl)
 	metricsAPIInjector(mux)
 	return

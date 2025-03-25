@@ -1,14 +1,18 @@
-package datalayer
+package memstorage
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/alevnyacow/metrics/internal/datalayer"
+)
 
 func TestCounters(t *testing.T) {
 	const testCounterName = "testCounterName"
-	const testCounterValue CounterMetricValue = 10
+	const testCounterValue datalayer.CounterValue = 10
 
 	memStorage := NewMemStorage()
 	memStorage.AddCounterMetric(testCounterName, testCounterValue)
-	val, wasFound := memStorage.GetCounterMetricValue(testCounterName)
+	val, wasFound := memStorage.GetCounterValue(testCounterName)
 	if !wasFound {
 		t.Errorf("%s was not found after creating", testCounterName)
 	}
@@ -16,7 +20,7 @@ func TestCounters(t *testing.T) {
 		t.Errorf("Expected %s to be %d and got %d", testCounterName, testCounterValue, val)
 	}
 	memStorage.AddCounterMetric(testCounterName, testCounterValue)
-	valAfterAdding, wasFoundAfterAdding := memStorage.GetCounterMetricValue(testCounterName)
+	valAfterAdding, wasFoundAfterAdding := memStorage.GetCounterValue(testCounterName)
 	if !wasFoundAfterAdding {
 		t.Errorf("%s was not found after modifying", testCounterName)
 	}

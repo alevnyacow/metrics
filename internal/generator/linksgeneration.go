@@ -4,7 +4,7 @@ import "github.com/alevnyacow/metrics/internal/datalayer"
 
 func (counterMetrics *Counters) Links(apiRoot string) (links []string) {
 	// Mapping of counter metrics data to their request names.
-	counterRequestNamesMapping := map[string]datalayer.CounterMetricValue{
+	counterRequestNamesMapping := map[string]datalayer.CounterValue{
 		"PollCount": counterMetrics.PollCount,
 	}
 
@@ -20,7 +20,7 @@ func (counterMetrics *Counters) Links(apiRoot string) (links []string) {
 
 func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
 	// Mapping of gauge metrics data to their request names.
-	gaugeRequestNamesMapping := map[string]datalayer.GaugeMetricValue{
+	gaugeRequestNamesMapping := map[string]datalayer.GaugeValue{
 		"Alloc":         gaugeMetrics.Alloc,
 		"BuckHashSys":   gaugeMetrics.BuckHashSys,
 		"Frees":         gaugeMetrics.Frees,

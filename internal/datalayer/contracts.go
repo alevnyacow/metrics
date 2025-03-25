@@ -7,20 +7,20 @@ const (
 	CounterMetricType MetricType = "COUNTER"
 )
 
-type GaugeMetricName string
-type GaugeMetricValue float64
+type GaugeName string
+type GaugeValue float64
 
-type CounterMetricName string
-type CounterMetricValue int64
+type CounterName string
+type CounterValue int64
 
 // Inner structure of memory storage struct.
 type MemStorage struct {
 	// Map of gauge metrics with keys of gauge metric names
 	// and values of gauge metric values.
-	gauges map[GaugeMetricName]GaugeMetricValue
+	gauges map[GaugeName]GaugeValue
 	// Map of counter metrics with keys of counter metric names
 	// and values of counter metric values.
-	counters map[CounterMetricName]CounterMetricValue
+	counters map[CounterName]CounterValue
 }
 
 // Interface of metrics data layer.
@@ -29,18 +29,16 @@ type MetricsDataLayer interface {
 	// will be summed with given value. Otherwise, new
 	// record will be generated in Counters with given key
 	// and given value.
-	AddCounterMetric(key CounterMetricName, value CounterMetricValue) (success bool)
+	AddCounterMetric(key CounterName, value CounterValue) (success bool)
 	// Returns counter metric value and status flag showing if
 	// value was found.
-	GetCounterMetricValue(key CounterMetricName) (value CounterMetricValue, wasFound bool)
+	GetCounterValue(key CounterName) (value CounterValue, wasFound bool)
 	// Returns gauge metric value and status flag showing if
 	// value was found.
-	GetGaugeMetricValue(key GaugeMetricName) (value GaugeMetricValue, wasFound bool)
+	GetGaugeValue(key GaugeName) (value GaugeValue, wasFound bool)
 	// If Gauges contained record with given key, its value
 	// will be rewritten with given value. Otherwise, new
 	// record will be generated in Gauges with given key
 	// and given value.
-	SetGaugeMetric(key GaugeMetricName, value GaugeMetricValue) (success bool)
+	SetGaugeMetric(key GaugeName, value GaugeValue) (success bool)
 }
-
-var _ MetricsDataLayer = (*MemStorage)(nil)

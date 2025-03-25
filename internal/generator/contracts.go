@@ -30,11 +30,11 @@ type Gauges struct {
 	StackSys,
 	Sys,
 	TotalAlloc,
-	RandomValue datalayer.GaugeMetricValue
+	RandomValue datalayer.GaugeValue
 }
 
 type Counters struct {
-	PollCount datalayer.CounterMetricValue
+	PollCount datalayer.CounterValue
 }
 
 type WithLinksGeneration interface {

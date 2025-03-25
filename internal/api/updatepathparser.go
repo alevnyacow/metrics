@@ -11,13 +11,13 @@ import (
 )
 
 type counterPathParams struct {
-	name         datalayer.CounterMetricName
-	valueCounter datalayer.CounterMetricValue
+	name         datalayer.CounterName
+	valueCounter datalayer.CounterValue
 }
 
 type gaugePathParams struct {
-	name         datalayer.GaugeMetricName
-	valueCounter datalayer.GaugeMetricValue
+	name         datalayer.GaugeName
+	valueCounter datalayer.GaugeValue
 }
 
 type updatePathParsingResult struct {
@@ -44,34 +44,34 @@ func parseMetricNameAndStringValue(request *http.Request) (metricName string, me
 }
 
 func parseCounterPayloadFromRequest(request *http.Request) (payload counterPathParams, result updatePathParsingResult) {
-	counterMetricName, counterValueAsString := parseMetricNameAndStringValue(request)
-	counterMetricValue, counterValueParsingError := strconv.ParseInt(counterValueAsString, 10, 64)
+	CounterName, counterValueAsString := parseMetricNameAndStringValue(request)
+	CounterValue, counterValueParsingError := strconv.ParseInt(counterValueAsString, 10, 64)
 
 	result = updatePathParsingResult{
-		parsedName:  counterMetricName != "",
+		parsedName:  CounterName != "",
 		parsedValue: counterValueParsingError == nil,
 	}
 
 	payload = counterPathParams{
-		name:         datalayer.CounterMetricName(counterMetricName),
-		valueCounter: datalayer.CounterMetricValue(counterMetricValue),
+		name:         datalayer.CounterName(CounterName),
+		valueCounter: datalayer.CounterValue(CounterValue),
 	}
 
 	return
 }
 
 func parseGaugePayloadFromRequest(request *http.Request) (payload gaugePathParams, result updatePathParsingResult) {
-	gaugeMetricName, gaugeValueAsString := parseMetricNameAndStringValue(request)
-	gaugeMetricValue, gaugeValueParsingError := strconv.ParseFloat(gaugeValueAsString, 64)
+	GaugeName, gaugeValueAsString := parseMetricNameAndStringValue(request)
+	GaugeValue, gaugeValueParsingError := strconv.ParseFloat(gaugeValueAsString, 64)
 
 	result = updatePathParsingResult{
-		parsedName:  gaugeMetricName != "",
+		parsedName:  GaugeName != "",
 		parsedValue: gaugeValueParsingError == nil,
 	}
 
 	payload = gaugePathParams{
-		name:         datalayer.GaugeMetricName(gaugeMetricName),
-		valueCounter: datalayer.GaugeMetricValue(gaugeMetricValue),
+		name:         datalayer.GaugeName(GaugeName),
+		valueCounter: datalayer.GaugeValue(GaugeValue),
 	}
 
 	return
