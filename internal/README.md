@@ -17,3 +17,7 @@ Functionality of metrics generation and obtaining api links to update them.
 ### memstorage
 
 In-memory DL implementation.
+
+### utils
+
+Domain-indiependent helpers.

@@ -2,37 +2,34 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"time"
 
 	"github.com/alevnyacow/metrics/internal/generator"
+	"github.com/alevnyacow/metrics/internal/utils"
 )
 
-func generateMetrics(intervalInSeconds int, counters *generator.Counters, gauges *generator.Gauges) {
-	for {
-		time.Sleep(time.Duration(intervalInSeconds) * time.Second)
+func newGeneratorCallback(counters *generator.Counters, gauges *generator.Gauges) func() {
+	return func() {
 		*counters = generator.GenerateCounters()
 		*gauges = generator.GenerateGauges()
+		fmt.Print("SUP")
 	}
 }
 
-func sendMetrics(intervalInSeconds int, apiRoot string, counters generator.WithLinks, gauges generator.WithLinks) {
-	for {
-		time.Sleep(time.Duration(intervalInSeconds) * time.Second)
-
+func newSenderCallback(apiRoot string, counters generator.WithLinks, gauges generator.WithLinks) func() {
+	return func() {
 		countersLinks := counters.Links(apiRoot)
 		// gaugesLinks := gauges.Links(apiRoot)
 
 		for _, counterLink := range countersLinks {
 			fmt.Println("CALLED " + counterLink)
-			req, g := http.NewRequest("POST", counterLink, nil)
-			if g != nil {
-				fmt.Println(g.Error())
-			}
-			client := http.Client{
-				Timeout: 10 * time.Second, // Set timeout to 10 seconds
-			}
-			client.Do(req)
+			// req, g := http.NewRequest("POST", counterLink, nil)
+			// if g != nil {
+			// 	fmt.Println(g.Error())
+			// }
+			// client := http.Client{
+			// 	Timeout: 10 * time.Second, // Set timeout to 10 seconds
+			// }
+			// client.Do(req)
 
 			/**
 			req, err := http.NewRequest("POST", url, nil)
@@ -82,11 +79,15 @@ func main() {
 	counterMetrics := &generator.Counters{}
 	gaugeMetrics := &generator.Gauges{}
 
+	apiRoot := "http://localhost:8080"
 	pollInterval := 2
 	reportInterval := 10
 
-	go generateMetrics(pollInterval, counterMetrics, gaugeMetrics)
-	go sendMetrics(reportInterval, "http://localhost:8080", counterMetrics, gaugeMetrics)
+	generatorCallback := newGeneratorCallback(counterMetrics, gaugeMetrics)
+	senderCallback := newSenderCallback(apiRoot, counterMetrics, gaugeMetrics)
+
+	go utils.RepetitiveCall(pollInterval, generatorCallback)()
+	go utils.RepetitiveCall(reportInterval, senderCallback)()
 
 	select {}
 }
