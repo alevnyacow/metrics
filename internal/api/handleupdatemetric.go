@@ -6,6 +6,8 @@ import (
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
+// Takes data-layer as input and returns handler
+// for upserting metric by its type, name and value.
 func handleUpdateMetric(dl datalayer.DataLayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parsing metrics type from path, send 400 status

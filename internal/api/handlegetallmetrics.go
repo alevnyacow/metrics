@@ -7,6 +7,8 @@ import (
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
+// Takes data-layer as input and returns
+// handler for obtaining all metric values.
 func handleGetAllMetrics(dl datalayer.DataLayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get JSON representation of all metrics.

@@ -6,6 +6,8 @@ import (
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
+// Takes data-layer as input and returns handler
+// for obtaining one metric by its type and name.
 func handleGetMetric(dl datalayer.DataLayer) http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, request *http.Request) {
 		// Parsing metrics type from path, send 400 status
@@ -32,7 +34,6 @@ func handleGetMetric(dl datalayer.DataLayer) http.HandlerFunc {
 			}
 			// Response with requested counter value.
 			responseWriter.Write([]byte(datalayer.CounterValueToString(counterValue)))
-			return
 		}
 		// Gauge metric obtaining logic.
 		if metricType == gaugeMetricType {
