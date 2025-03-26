@@ -10,10 +10,14 @@ const defaultPollInterval = 10
 const defaultReportInterval = 2
 
 func ForAgent() (apiHost string, pollInterval uint, reportInterval uint) {
-	apiHost = *flag.String("a", defaultClientAPIHost, "API host")
-	pollInterval = *flag.Uint("p", defaultPollInterval, "Poll interval")
-	reportInterval = *flag.Uint("r", defaultReportInterval, "Report interval")
+	apiHostPointer := flag.String("a", defaultClientAPIHost, "API host")
+	pollIntervalPointer := flag.Uint("p", defaultPollInterval, "Poll interval")
+	reportIntervalPointer := flag.Uint("r", defaultReportInterval, "Report interval")
 	flag.Parse()
+
+	apiHost = *apiHostPointer
+	pollInterval = *pollIntervalPointer
+	reportInterval = *reportIntervalPointer
 
 	_, err := url.ParseRequestURI(apiHost)
 	if err != nil {

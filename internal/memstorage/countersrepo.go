@@ -1,8 +1,6 @@
 package memstorage
 
 import (
-	"fmt"
-
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
@@ -29,9 +27,6 @@ func (memstorage *MemStorage) AddCounterMetric(key datalayer.CounterName, value 
 }
 
 func (memstorage *MemStorage) AllCounters() (dtos []datalayer.CounterDTO) {
-	fmt.Println(memstorage.counters)
-	fmt.Println(memstorage.gauges)
-
 	dtos = make([]datalayer.CounterDTO, 0)
 	for name, value := range memstorage.counters {
 		dtos = append(
