@@ -24,6 +24,7 @@ func ForAgent() (apiHost string, pollInterval uint, reportInterval uint) {
 
 	if err != nil {
 		apiHost = defaultAPIHost
+		return
 	}
 
 	if !strings.HasPrefix(apiHost, "http") {
