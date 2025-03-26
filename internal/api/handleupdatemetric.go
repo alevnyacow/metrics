@@ -6,7 +6,7 @@ import (
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
-func newUpdateHandler(dl datalayer.DataLayer) http.HandlerFunc {
+func handleUpdateMetric(dl datalayer.DataLayer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parsing metrics type from path, send 400 status
 		// code if failed.
@@ -17,15 +17,15 @@ func newUpdateHandler(dl datalayer.DataLayer) http.HandlerFunc {
 		}
 		// Parsing metrics name from path, send 404 status
 		// code if failed.
-		metricName, metricNameParsingSuccess := parseMetricName(r)
-		if !metricNameParsingSuccess {
+		metricName := r.PathValue(namePathParam)
+		if metricName == "" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		// Parsing metrics value as string from path, sends 400
 		// status code if failed.
-		stringValue, stringValueParsingSuccess := parseStringValue(r)
-		if !stringValueParsingSuccess {
+		stringValue := r.PathValue(valuePathParam)
+		if stringValue == "" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -33,19 +33,19 @@ func newUpdateHandler(dl datalayer.DataLayer) http.HandlerFunc {
 		if metricType == counterMetricType {
 			// Parsing counter value from its raw string representation,
 			// sends 400 status code if failed.
-			metricValue, metricValueParsingSuccess := parseCounterValue(stringValue)
-			if !metricValueParsingSuccess {
+			counterValue, counterValueParsingSuccess := datalayer.CounterValueFromString(stringValue)
+			if !counterValueParsingSuccess {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			// Updating counter metric in data-layer by name and value.
-			dl.AddCounterMetric(datalayer.CounterName(metricName), metricValue)
+			dl.AddCounterMetric(datalayer.CounterName(metricName), counterValue)
 		}
 		// Gauge metric updating logic.
 		if metricType == gaugeMetricType {
 			// Parsing gauge value from its raw string representation,
 			// sends 400 status code if failed.
-			gaugeValue, gaugeValueParsingSuccess := parseGaugeValue(stringValue)
+			gaugeValue, gaugeValueParsingSuccess := datalayer.GaugeValueFromString(stringValue)
 			if !gaugeValueParsingSuccess {
 				w.WriteHeader(http.StatusBadRequest)
 				return

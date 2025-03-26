@@ -2,12 +2,11 @@ package api
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
-func newMetricValueHandler(dl datalayer.DataLayer) http.HandlerFunc {
+func handleGetMetric(dl datalayer.DataLayer) http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, request *http.Request) {
 		// Parsing metrics type from path, send 400 status
 		// code if failed.
@@ -18,33 +17,33 @@ func newMetricValueHandler(dl datalayer.DataLayer) http.HandlerFunc {
 		}
 		// Parsing metrics name from path, send 404 status
 		// code if failed.
-		metricName, _ := parseMetricName(request)
+		metricName := request.PathValue(namePathParam)
 		if metricName == "" {
 			responseWriter.WriteHeader(http.StatusNotFound)
 			return
 		}
 		// Counter metric obtaining logic.
 		if metricType == counterMetricType {
-			metricValue, wasFound := dl.GetCounterValue(datalayer.CounterName(metricName))
+			counterValue, counterWasFound := dl.GetCounterValue(datalayer.CounterName(metricName))
 			// If requested counter was not found, return 404 status code.
-			if !wasFound {
+			if !counterWasFound {
 				responseWriter.WriteHeader(http.StatusNotFound)
 				return
 			}
 			// Response with requested counter value.
-			responseWriter.Write([]byte(strconv.FormatInt(int64(metricValue), 10)))
+			responseWriter.Write([]byte(datalayer.CounterValueToString(counterValue)))
 			return
 		}
 		// Gauge metric obtaining logic.
 		if metricType == gaugeMetricType {
-			metricValue, wasFound := dl.GetGaugeValue(datalayer.GaugeName(metricName))
+			gaugeValue, gaugeWasFound := dl.GetGaugeValue(datalayer.GaugeName(metricName))
 			// If requested gauge was not found, return 404 status code.
-			if !wasFound {
+			if !gaugeWasFound {
 				responseWriter.WriteHeader(http.StatusNotFound)
 				return
 			}
 			// Response with requested gauge value.
-			responseWriter.Write([]byte(strconv.FormatFloat(float64(metricValue), 'f', -1, 64)))
+			responseWriter.Write([]byte(datalayer.GaugeValueToString(gaugeValue)))
 		}
 	}
 }

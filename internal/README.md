@@ -4,11 +4,11 @@
 
 ### api
 
-Provides Metrics API controller injection in http.ServeMux.
+Provides Metrics API controller injection in chi router.
 
 ### datalayer
 
-Abstract DL contracts.
+Abstract DL contracts, mappers and utils.
 
 ### generator
 
@@ -20,4 +20,4 @@ In-memory DL implementation.
 
 ### utils
 
-Domain-indiependent helpers and contracts.
+Domain-independent helpers and contracts.

@@ -2,9 +2,6 @@ package api
 
 import (
 	"net/http"
-	"strconv"
-
-	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
 // Definite metric type.
@@ -25,45 +22,7 @@ func parseMetricType(request *http.Request) (metricType metric, success bool) {
 		"gauge":   gaugeMetricType,
 		"counter": counterMetricType,
 	}
-	metricTypeFromPath := request.PathValue("type")
+	metricTypeFromPath := request.PathValue(typePathParam)
 	metricType, success = pathParamToMetricType[metricTypeFromPath]
-	return
-}
-
-// Parse string data from "name" path parameter.
-func parseMetricName(request *http.Request) (metricName string, nameWasProvided bool) {
-	metricName = request.PathValue("name")
-	nameWasProvided = metricName != ""
-	return
-}
-
-// Parse string data from "value" path parameter.
-func parseStringValue(request *http.Request) (valueAsString string, valueWasProvided bool) {
-	valueAsString = request.PathValue("value")
-	valueWasProvided = valueAsString != ""
-	return
-}
-
-// Parse counter value data from raw string data.
-func parseCounterValue(counterValueAsString string) (counterValue datalayer.CounterValue, valueWasParsed bool) {
-	value, parsingError := strconv.ParseInt(counterValueAsString, 10, 64)
-	if parsingError != nil {
-		valueWasParsed = false
-		return
-	}
-	valueWasParsed = true
-	counterValue = datalayer.CounterValue(value)
-	return
-}
-
-// Parse gauge value data from raw string data.
-func parseGaugeValue(gaugeValueAsString string) (gaugeValue datalayer.GaugeValue, valueWasParsed bool) {
-	value, parsingError := strconv.ParseFloat(gaugeValueAsString, 64)
-	if parsingError != nil {
-		valueWasParsed = false
-		return
-	}
-	valueWasParsed = true
-	gaugeValue = datalayer.GaugeValue(value)
 	return
 }

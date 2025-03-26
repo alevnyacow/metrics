@@ -1,8 +1,6 @@
 package memstorage
 
 import (
-	"strconv"
-
 	"github.com/alevnyacow/metrics/internal/datalayer"
 )
 
@@ -19,14 +17,14 @@ func (memstorage *MemStorage) SetGaugeMetric(key datalayer.GaugeName, value data
 	return
 }
 
-func (memstorage *MemStorage) AllGauges() (dtos []datalayer.MetricDTO) {
-	dtos = make([]datalayer.MetricDTO, 0)
+func (memstorage *MemStorage) AllGauges() (dtos []datalayer.GaugeDTO) {
+	dtos = make([]datalayer.GaugeDTO, 0)
 	for name, value := range memstorage.gauges {
 		dtos = append(
 			dtos,
-			datalayer.MetricDTO{
+			datalayer.GaugeDTO{
 				Name:  string(name),
-				Value: strconv.FormatFloat(float64(value), 'f', -1, 64),
+				Value: datalayer.GaugeValueToString(value),
 			})
 	}
 	return

@@ -6,10 +6,15 @@ type GaugeValue float64
 type CounterName string
 type CounterValue int64
 
+// Metric Data Transfer Object struct,
+// can be serialized into JSON.
 type MetricDTO struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
+
+type CounterDTO MetricDTO
+type GaugeDTO MetricDTO
 
 // Interface of counters repository.
 type CountersRepository interface {
@@ -22,7 +27,7 @@ type CountersRepository interface {
 	// value was found.
 	GetCounterValue(key CounterName) (value CounterValue, wasFound bool)
 	// Returns information about all counters.
-	AllCounters() []MetricDTO
+	AllCounters() []CounterDTO
 }
 
 // Interface of gauges repository.
@@ -36,11 +41,18 @@ type GaugesRepository interface {
 	// and given value.
 	SetGaugeMetric(key GaugeName, value GaugeValue) (success bool)
 	// Returns information about all gauges.
-	AllGauges() []MetricDTO
+	AllGauges() []GaugeDTO
+}
+
+// Interface of common metrics repository
+// for all metrics regardless its type.
+type MetricsRepository interface {
+	AllMetrics() []MetricDTO
 }
 
 // Interface of metrics data layer.
 type DataLayer interface {
 	CountersRepository
 	GaugesRepository
+	MetricsRepository
 }
