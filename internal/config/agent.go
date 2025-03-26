@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"net/url"
+	"strings"
 )
 
 const defaultClientAPIHost = "http://localhost:8080"
@@ -20,8 +21,13 @@ func ForAgent() (apiHost string, pollInterval uint, reportInterval uint) {
 	reportInterval = *reportIntervalPointer
 
 	_, err := url.ParseRequestURI(apiHost)
+
 	if err != nil {
 		apiHost = defaultAPIHost
+	}
+
+	if !strings.HasPrefix(apiHost, "http") {
+		apiHost = "http://" + apiHost
 	}
 
 	return
