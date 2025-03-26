@@ -8,7 +8,7 @@ Provides Metrics API controller injection in chi router.
 
 ### datalayer
 
-Abstract DL contracts, mappers and utils.
+Abstract DL contracts and utils.
 
 ### generator
 

@@ -2,11 +2,14 @@ package datalayer
 
 import "strconv"
 
+// Default implementation of getting counter
+// value string representation.
 func CounterValueToString(value CounterValue) string {
 	return strconv.FormatInt(int64(value), 10)
 }
 
-// Parse counter value data from raw string data.
+// Default implementation of getting counter
+// value from raw string value.
 func CounterValueFromString(counterValueAsString string) (counterValue CounterValue, valueWasParsed bool) {
 	value, parsingError := strconv.ParseInt(counterValueAsString, 10, 64)
 	if parsingError != nil {
