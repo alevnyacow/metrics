@@ -1,6 +1,9 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"net/url"
+)
 
 const defaultClientAPIHost = "http://localhost:8080"
 const defaultPollInterval = 10
@@ -11,5 +14,11 @@ func ForAgent() (apiHost string, pollInterval uint, reportInterval uint) {
 	pollInterval = *flag.Uint("p", defaultPollInterval, "Poll interval")
 	reportInterval = *flag.Uint("r", defaultReportInterval, "Report interval")
 	flag.Parse()
+
+	_, err := url.ParseRequestURI(apiHost)
+	if err != nil {
+		apiHost = defaultAPIHost
+	}
+
 	return
 }
