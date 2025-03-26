@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/generator"
 	"github.com/alevnyacow/metrics/internal/utils"
 )
@@ -30,13 +31,10 @@ func newSenderCallback(apiRoot string, counters utils.WithLinks, gauges utils.Wi
 func main() {
 	counterMetrics := &generator.Counters{}
 	gaugeMetrics := &generator.Gauges{}
-
-	apiRoot := "http://localhost:8080"
-	pollInterval := 2
-	reportInterval := 10
+	apiHost, pollInterval, reportInterval := config.ForAgent()
 
 	generatorCallback := newGeneratorCallback(counterMetrics, gaugeMetrics)
-	senderCallback := newSenderCallback(apiRoot, counterMetrics, gaugeMetrics)
+	senderCallback := newSenderCallback(apiHost, counterMetrics, gaugeMetrics)
 
 	go utils.InfiniteRepetitiveCall(pollInterval, generatorCallback)()
 	go utils.InfiniteRepetitiveCall(reportInterval, senderCallback)()
