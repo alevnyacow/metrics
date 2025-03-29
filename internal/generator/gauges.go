@@ -7,7 +7,6 @@ import (
 
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/datalayer"
-	"github.com/alevnyacow/metrics/internal/utils"
 )
 
 // Agent gauge metrics structure contract.
@@ -81,7 +80,7 @@ func GenerateGauges() Gauges {
 }
 
 // Generates update links for gauge metrics.
-func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
+func (gaugeMetrics *Gauges) UpdateLinks(apiRoot string) (links []string) {
 	// Mapping of gauge metrics values to their URL request names.
 	gaugeRequestNamesMapping := map[string]datalayer.GaugeValue{
 		"Alloc":         gaugeMetrics.Alloc,
@@ -133,4 +132,4 @@ func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
 
 // Static check if Gauges implements
 // utils.WithLinks interface.
-var _ utils.WithLinks = (*Gauges)(nil)
+var _ MetricsWithLinks = (*Gauges)(nil)

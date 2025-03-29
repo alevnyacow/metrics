@@ -24,4 +24,4 @@ In-memory DL implementation.
 
 ### utils
 
-Domain-independent helper functions and contracts.
+Domain-independent helper functions.

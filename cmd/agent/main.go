@@ -32,10 +32,10 @@ func newGeneratorCallback(counters *generator.Counters, gauges *generator.Gauges
 // Returns a callback which generates links
 // of given counters and gauges and makes
 // POST requests without body for all these links.
-func newSenderCallback(apiRoot string, counters utils.WithLinks, gauges utils.WithLinks) func() {
+func newSenderCallback(apiRoot string, counters generator.MetricsWithLinks, gauges generator.MetricsWithLinks) func() {
 	return func() {
-		countersLinks := counters.Links(apiRoot)
-		gaugesLinks := gauges.Links(apiRoot)
+		countersLinks := counters.UpdateLinks(apiRoot)
+		gaugesLinks := gauges.UpdateLinks(apiRoot)
 
 		for _, counterLink := range countersLinks {
 			utils.SendPost(counterLink)

@@ -5,7 +5,6 @@ import (
 
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/datalayer"
-	"github.com/alevnyacow/metrics/internal/utils"
 )
 
 // Agent counter metrics structure contract.
@@ -21,7 +20,7 @@ func GenerateCounters() Counters {
 }
 
 // Generates update links for gauge metrics.
-func (counterMetrics *Counters) Links(apiRoot string) (links []string) {
+func (counterMetrics *Counters) UpdateLinks(apiRoot string) (links []string) {
 	// Mapping of counter metrics values to their URL request names.
 	counterRequestNamesMapping := map[string]datalayer.CounterValue{
 		"PollCount": counterMetrics.PollCount,
@@ -46,4 +45,4 @@ func (counterMetrics *Counters) Links(apiRoot string) (links []string) {
 
 // Static check if Counters implements
 // utils.WithLinks interface.
-var _ utils.WithLinks = (*Counters)(nil)
+var _ MetricsWithLinks = (*Counters)(nil)
