@@ -12,3 +12,19 @@ func checkLink(target string) (isCorrect bool) {
 	isCorrect = err == nil
 	return
 }
+
+func selectExistingString(lhs string, rhs string) string {
+	if lhs == "" {
+		return rhs
+	}
+
+	return lhs
+}
+
+func selectExistingUInt(lhs uint, rhs uint) uint {
+	if lhs == 0 {
+		return rhs
+	}
+
+	return lhs
+}
