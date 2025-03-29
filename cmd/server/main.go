@@ -13,6 +13,7 @@ func main() {
 	apiHost := config.ForServer()
 	chiRouter := chi.NewRouter()
 	datalayer := memstorage.NewMemStorage()
-	api.ConfigureChiRouter(chiRouter, datalayer)
+
+	api.InjectMetricControllerInChi(chiRouter, datalayer)
 	http.ListenAndServe(apiHost, chiRouter)
 }

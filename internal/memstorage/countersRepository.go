@@ -32,8 +32,8 @@ func (memstorage *MemStorage) AllCounters() (dtos []datalayer.CounterDTO) {
 		dtos = append(
 			dtos,
 			datalayer.CounterDTO{
-				Name:  string(name),
-				Value: datalayer.CounterValueToString(value),
+				Name:  name,
+				Value: value,
 			})
 	}
 	return

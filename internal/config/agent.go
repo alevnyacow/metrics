@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"net/url"
 	"strings"
 )
 
@@ -20,16 +19,27 @@ func ForAgent() (apiHost string, pollInterval uint, reportInterval uint) {
 	pollInterval = *pollIntervalPointer
 	reportInterval = *reportIntervalPointer
 
-	_, err := url.ParseRequestURI(apiHost)
+	isCorrectLink := checkLink(apiHost)
 
-	if err != nil {
+	if !isCorrectLink {
 		apiHost = defaultAPIHost
 		return
 	}
 
-	if !strings.HasPrefix(apiHost, "http") {
-		apiHost = "http://" + apiHost
+	if isLocalhostWithoutPrefix(apiHost) {
+		apiHost = withHTTPPrefix(apiHost)
 	}
 
 	return
+}
+
+// Checks if provided link string is localhost
+// and it does not start with "http://".
+func isLocalhostWithoutPrefix(target string) bool {
+	return strings.HasPrefix(target, "localhost:")
+}
+
+// Returns given link with added "http://" prefix.
+func withHTTPPrefix(target string) string {
+	return "http://" + target
 }

@@ -1,20 +1,47 @@
 package datalayer
 
-type GaugeName string
-type GaugeValue float64
+// Definite metric type.
+type MetricType string
 
-type CounterName string
-type CounterValue int64
+const (
+	// Gauge metric.
+	GaugeMetricType MetricType = "GAUGE"
+	// Counter metric.
+	CounterMetricType MetricType = "COUNTER"
+)
 
-// Metric Data Transfer Object struct,
-// can be serialized into JSON.
+// Metric Data Transfer Object struct, which
+// is general metric representation. Can be
+// serialized into JSON.
 type MetricDTO struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string     `json:"name"`
+	Value string     `json:"value"`
+	Type  MetricType `json:"type"`
 }
 
-type CounterDTO MetricDTO
-type GaugeDTO MetricDTO
+// Counter metric name type.
+type CounterName string
+
+// Counter metric value type.
+type CounterValue int64
+
+// Counter metric Data Transfer Object.
+type CounterDTO struct {
+	Name  CounterName
+	Value CounterValue
+}
+
+// Gauge metric name type.
+type GaugeName string
+
+// Gauge metric value type.
+type GaugeValue float64
+
+// Gauge metric Data Transfere Object.
+type GaugeDTO struct {
+	Name  GaugeName
+	Value GaugeValue
+}
 
 // Interface of counters repository.
 type CountersRepository interface {

@@ -6,6 +6,10 @@
 
 Provides Metrics API controller injection in chi router.
 
+### config
+
+Provides configuration for agent and server applications.
+
 ### datalayer
 
 Abstract DL contracts and utils.

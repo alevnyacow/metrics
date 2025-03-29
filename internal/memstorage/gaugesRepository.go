@@ -23,8 +23,8 @@ func (memstorage *MemStorage) AllGauges() (dtos []datalayer.GaugeDTO) {
 		dtos = append(
 			dtos,
 			datalayer.GaugeDTO{
-				Name:  string(name),
-				Value: datalayer.GaugeValueToString(value),
+				Name:  name,
+				Value: value,
 			})
 	}
 	return
