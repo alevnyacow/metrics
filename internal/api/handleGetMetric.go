@@ -24,7 +24,7 @@ func handleGetMetric(dl datalayer.DataLayer) http.HandlerFunc {
 		case datalayer.CounterMetricType:
 			provideCounterMetric(dl, datalayer.CounterName(metricName), w)
 		case datalayer.GaugeMetricType:
-			obtainGaugeMetric(dl, datalayer.GaugeName(metricName), w)
+			provideGaugeMetric(dl, datalayer.GaugeName(metricName), w)
 		default:
 			unknownMetricTypeResponse(w)
 		}
@@ -48,7 +48,7 @@ func provideCounterMetric(
 
 // Tries to build a response with a requested
 // gauge metric value by its name.
-func obtainGaugeMetric(
+func provideGaugeMetric(
 	gaugesRepository datalayer.GaugesRepository,
 	gaugeName datalayer.GaugeName,
 	w http.ResponseWriter,
