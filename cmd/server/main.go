@@ -13,6 +13,8 @@ func main() {
 	configs := config.ParseServerConfigs()
 	chiRouter := chi.NewRouter()
 	datalayer := memstorage.NewMemStorage()
+
 	api.InjectMetricControllerInChi(chiRouter, datalayer)
+
 	http.ListenAndServe(configs.APIHost, chiRouter)
 }

@@ -10,6 +10,7 @@ func main() {
 	configs := config.ParseAgentConfigs()
 	counterMetrics := &generator.Counters{}
 	gaugeMetrics := &generator.Gauges{}
+
 	generatorCallback := newGeneratorCallback(counterMetrics, gaugeMetrics)
 	senderCallback := newSenderCallback(configs.APIHost, counterMetrics, gaugeMetrics)
 

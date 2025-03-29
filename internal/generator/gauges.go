@@ -10,6 +10,7 @@ import (
 	"github.com/alevnyacow/metrics/internal/utils"
 )
 
+// Agent gauge metrics structure contract.
 type Gauges struct {
 	Alloc,
 	BuckHashSys,
@@ -41,6 +42,8 @@ type Gauges struct {
 	RandomValue datalayer.GaugeValue
 }
 
+// Generates gauges based on MemStats and
+// some random values.
 func GenerateGauges() Gauges {
 	var stats runtime.MemStats
 	runtime.ReadMemStats(&stats)
@@ -77,8 +80,9 @@ func GenerateGauges() Gauges {
 	}
 }
 
+// Generates update links for gauge metrics.
 func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
-	// Mapping of gauge metrics data to their request names.
+	// Mapping of gauge metrics values to their URL request names.
 	gaugeRequestNamesMapping := map[string]datalayer.GaugeValue{
 		"Alloc":         gaugeMetrics.Alloc,
 		"BuckHashSys":   gaugeMetrics.BuckHashSys,
@@ -112,13 +116,13 @@ func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
 
 	links = make([]string, 0)
 
-	for requestName, metricValue := range gaugeRequestNamesMapping {
+	for requestNameInURL, metricValue := range gaugeRequestNamesMapping {
 		link := fmt.Sprintf(
 			"%s/%s/%s/%s/%s",
 			apiRoot,
 			api.UpdateLinkRoot,
 			api.GaugeLinkPath,
-			requestName,
+			requestNameInURL,
 			datalayer.GaugeValueToString(metricValue),
 		)
 		links = append(links, link)
@@ -127,4 +131,6 @@ func (gaugeMetrics *Gauges) Links(apiRoot string) (links []string) {
 	return
 }
 
+// Static check if Gauges implements
+// utils.WithLinks interface.
 var _ utils.WithLinks = (*Gauges)(nil)
