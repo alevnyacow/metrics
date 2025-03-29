@@ -10,10 +10,9 @@ import (
 )
 
 func main() {
-	apiHost := config.ForServer()
+	configs := config.ParseServerConfigs()
 	chiRouter := chi.NewRouter()
 	datalayer := memstorage.NewMemStorage()
-
 	api.InjectMetricControllerInChi(chiRouter, datalayer)
-	http.ListenAndServe(apiHost, chiRouter)
+	http.ListenAndServe(configs.APIHost, chiRouter)
 }

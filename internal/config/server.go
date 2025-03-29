@@ -6,33 +6,56 @@ import (
 	"github.com/caarlos0/env"
 )
 
-const defaultAPIHost = "localhost:8080"
-
-type ServerEnvConfigs struct {
+// Server configuration struct contract.
+type ServerConfigs struct {
 	APIHost string `env:"ADDRESS"`
 }
 
-func parseServerEnvData() (apiHost string) {
-	var configs ServerEnvConfigs
-	err := env.Parse(&configs)
-	if err != nil {
-		return
-	}
-	apiHost = configs.APIHost
-	return
+// Default server configuration values.
+var defaultServerConfigs = ServerConfigs{
+	APIHost: "localhost:8080",
 }
 
-func ForServer() (apiHost string) {
-	envDataAPIHost := parseServerEnvData()
-	apiHostPointer := flag.String("a", defaultAPIHost, "API host")
-	flag.Parse()
+// Returns configuration data for server application.
+func ParseServerConfigs() ServerConfigs {
+	envConfigs := parseServerEnvData()
+	argsConfigs := parseServerArgsConfigs()
+	serverConfigs := mergeServerConfigs(envConfigs, argsConfigs)
 
-	apiHost = selectExistingString(envDataAPIHost, *apiHostPointer)
-	isCorrectLink := checkLink(apiHost)
-
-	if !isCorrectLink {
-		apiHost = defaultAPIHost
+	if !isLinkCorrect(serverConfigs.APIHost) {
+		serverConfigs.APIHost = defaultServerConfigs.APIHost
 	}
 
-	return
+	return serverConfigs
+}
+
+// Returns parsed server configuration data
+// from environmental variables.
+func parseServerEnvData() ServerConfigs {
+	var configs ServerConfigs
+	err := env.Parse(&configs)
+	if err != nil {
+		return ServerConfigs{}
+	}
+	return configs
+}
+
+// Returns parsed server configuration data
+// from command line arguments or default
+// values if arguments were not provided.
+func parseServerArgsConfigs() ServerConfigs {
+	apiHostPointer := flag.String("a", defaultServerConfigs.APIHost, "API host")
+	flag.Parse()
+
+	return ServerConfigs{
+		APIHost: *apiHostPointer,
+	}
+}
+
+// Merges server env configs and server
+// arg configs with prior to env configs.
+func mergeServerConfigs(envConfigs ServerConfigs, argsConfigs ServerConfigs) ServerConfigs {
+	return ServerConfigs{
+		APIHost: selectExistingString(envConfigs.APIHost, argsConfigs.APIHost),
+	}
 }

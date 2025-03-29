@@ -29,15 +29,14 @@ func newSenderCallback(apiRoot string, counters utils.WithLinks, gauges utils.Wi
 }
 
 func main() {
+	configs := config.ParseAgentConfigs()
 	counterMetrics := &generator.Counters{}
 	gaugeMetrics := &generator.Gauges{}
-	apiHost, pollInterval, reportInterval := config.ForAgent()
 
 	generatorCallback := newGeneratorCallback(counterMetrics, gaugeMetrics)
-	senderCallback := newSenderCallback(apiHost, counterMetrics, gaugeMetrics)
+	senderCallback := newSenderCallback(configs.APIHost, counterMetrics, gaugeMetrics)
 
-	go utils.InfiniteRepetitiveCall(pollInterval, generatorCallback)()
-	go utils.InfiniteRepetitiveCall(reportInterval, senderCallback)()
-
+	go utils.InfiniteRepetitiveCall(configs.PollInterval, generatorCallback)()
+	go utils.InfiniteRepetitiveCall(configs.ReportInterval, senderCallback)()
 	select {}
 }

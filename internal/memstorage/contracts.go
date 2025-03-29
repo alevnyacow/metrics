@@ -12,4 +12,6 @@ type MemStorage struct {
 	counters map[datalayer.CounterName]datalayer.CounterValue
 }
 
+// Static check if MemStorage implements
+// DataLayer interface.
 var _ datalayer.DataLayer = (*MemStorage)(nil)
