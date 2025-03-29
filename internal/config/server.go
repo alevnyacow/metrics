@@ -9,7 +9,7 @@ import (
 const defaultAPIHost = "localhost:8080"
 
 type ServerEnvConfigs struct {
-	ApiHost string `env:"ADDRESS"`
+	APIHost string `env:"ADDRESS"`
 }
 
 func parseServerEnvData() (apiHost string) {
@@ -18,16 +18,16 @@ func parseServerEnvData() (apiHost string) {
 	if err != nil {
 		return
 	}
-	apiHost = configs.ApiHost
+	apiHost = configs.APIHost
 	return
 }
 
 func ForServer() (apiHost string) {
-	envDataApiHost := parseServerEnvData()
+	envDataAPIHost := parseServerEnvData()
 	apiHostPointer := flag.String("a", defaultAPIHost, "API host")
 	flag.Parse()
 
-	apiHost = selectExistingString(*apiHostPointer, envDataApiHost)
+	apiHost = selectExistingString(envDataAPIHost, *apiHostPointer)
 	isCorrectLink := checkLink(apiHost)
 
 	if !isCorrectLink {

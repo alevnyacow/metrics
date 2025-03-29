@@ -12,7 +12,7 @@ const defaultPollInterval = 10
 const defaultReportInterval = 2
 
 type AgentEnvConfigs struct {
-	ApiHost        string `env:"ADDRESS"`
+	APIHost        string `env:"ADDRESS"`
 	ReportInterval uint   `env:"REPORT_INTERVAL"`
 	PollInterval   uint   `env:"POLL_INTERVAL"`
 }
@@ -25,7 +25,7 @@ func parseAgentEnvData() (apiHost string, pollInterval uint, reportInterval uint
 	if err != nil {
 		return
 	}
-	apiHost = envConfigs.ApiHost
+	apiHost = envConfigs.APIHost
 	pollInterval = envConfigs.PollInterval
 	reportInterval = envConfigs.ReportInterval
 	return
