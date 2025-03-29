@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+// Sends POST request without a body to
+// requested URL.
 func SendPost(url string) (requestError error, response *http.Response, responseError error) {
 	request, requestErr := http.NewRequest("POST", url, nil)
 	if requestErr != nil {
