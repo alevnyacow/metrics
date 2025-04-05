@@ -6,39 +6,19 @@ import (
 	"github.com/caarlos0/env"
 )
 
-// Agent configuration struct contract.
 type AgentConfigs struct {
 	APIHost        string `env:"ADDRESS"`
 	ReportInterval uint   `env:"REPORT_INTERVAL"`
 	PollInterval   uint   `env:"POLL_INTERVAL"`
 }
 
-// Default client configuration values.
 var defaultAgentConfigs = AgentConfigs{
 	APIHost:        "localhost:8080",
-	ReportInterval: 2,
-	PollInterval:   10,
+	ReportInterval: 10,
+	PollInterval:   2,
 }
 
-// Returns configuration data for agent application.
-func ParseAgentConfigs() AgentConfigs {
-	envConfigs := parseAgentEnvData()
-	argsConfigs := parseAgentArgsConfigs()
-	agentConfigs := mergeClientConfigs(envConfigs, argsConfigs)
-
-	if !isLinkCorrect(agentConfigs.APIHost) {
-		agentConfigs.APIHost = defaultAgentConfigs.APIHost
-		return agentConfigs
-	}
-
-	if isLocalhostWithoutPrefix(agentConfigs.APIHost) {
-		agentConfigs.APIHost = withHTTPPrefix(agentConfigs.APIHost)
-	}
-
-	return agentConfigs
-}
-
-// Returns parsed agent configuration data
+// parseAgentEnvData returns parsed agent configuration data
 // from environmental variables.
 func parseAgentEnvData() AgentConfigs {
 	var envConfigs AgentConfigs
@@ -49,7 +29,7 @@ func parseAgentEnvData() AgentConfigs {
 	return envConfigs
 }
 
-// Returns parsed agent configuration data
+// parseAgentArgsConfigs returns parsed agent configuration data
 // from command line arguments or default
 // values if arguments were not provided.
 func parseAgentArgsConfigs() AgentConfigs {
@@ -65,7 +45,7 @@ func parseAgentArgsConfigs() AgentConfigs {
 	}
 }
 
-// Merges agent env configs and agent
+// mergeClientConfigs merges agent env configs and agent
 // arg configs with prior to env configs.
 func mergeClientConfigs(envConfigs AgentConfigs, argsConfigs AgentConfigs) AgentConfigs {
 	return AgentConfigs{

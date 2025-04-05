@@ -6,30 +6,15 @@ import (
 	"github.com/caarlos0/env"
 )
 
-// Server configuration struct contract.
 type ServerConfigs struct {
 	APIHost string `env:"ADDRESS"`
 }
 
-// Default server configuration values.
 var defaultServerConfigs = ServerConfigs{
 	APIHost: "localhost:8080",
 }
 
-// Returns configuration data for server application.
-func ParseServerConfigs() ServerConfigs {
-	envConfigs := parseServerEnvData()
-	argsConfigs := parseServerArgsConfigs()
-	serverConfigs := mergeServerConfigs(envConfigs, argsConfigs)
-
-	if !isLinkCorrect(serverConfigs.APIHost) {
-		serverConfigs.APIHost = defaultServerConfigs.APIHost
-	}
-
-	return serverConfigs
-}
-
-// Returns parsed server configuration data
+// parseServerEnvData returns parsed server configuration data
 // from environmental variables.
 func parseServerEnvData() ServerConfigs {
 	var configs ServerConfigs
@@ -40,7 +25,7 @@ func parseServerEnvData() ServerConfigs {
 	return configs
 }
 
-// Returns parsed server configuration data
+// parseServerArgsConfigs returns parsed server configuration data
 // from command line arguments or default
 // values if arguments were not provided.
 func parseServerArgsConfigs() ServerConfigs {
@@ -52,7 +37,7 @@ func parseServerArgsConfigs() ServerConfigs {
 	}
 }
 
-// Merges server env configs and server
+// mergeServerConfigs merges server env configs and server
 // arg configs with prior to env configs.
 func mergeServerConfigs(envConfigs ServerConfigs, argsConfigs ServerConfigs) ServerConfigs {
 	return ServerConfigs{

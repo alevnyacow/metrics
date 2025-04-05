@@ -5,27 +5,26 @@ import (
 	"strings"
 )
 
-// Checks if link is correct (trying to parse as URI)
-// and checks if link starts with http prefix, which
-// covers both "http://" and "https://".
+// isLinkCorrect tries to parse target as URI to
+// verify if target is correct
 func isLinkCorrect(target string) (isCorrect bool) {
 	_, err := url.ParseRequestURI(target)
 	isCorrect = err == nil
 	return
 }
 
-// Checks if provided link string is localhost
-// and it does not start with "http://".
+// isLocalhostWithoutPrefix checks if provided link string
+// is localhost and it does not start with "http://".
 func isLocalhostWithoutPrefix(target string) bool {
 	return strings.HasPrefix(target, "localhost:")
 }
 
-// Returns given link with added "http://" prefix.
+// withHTTPPrefix returns given link with added "http://" prefix.
 func withHTTPPrefix(target string) string {
 	return "http://" + target
 }
 
-// If first string is empty, second string is returned.
+// selectExistingString returns second string if first string is empty.
 // First string is returned otherwise.
 func selectExistingString(lhs string, rhs string) string {
 	if lhs == "" {
@@ -35,8 +34,8 @@ func selectExistingString(lhs string, rhs string) string {
 	return lhs
 }
 
-// If first uint is zero, second string is returned.
-// First string is returned otherwise.
+// selectExistingUInt returns second uint if first uint is zero.
+// First uint is returned otherwise.
 func selectExistingUInt(lhs uint, rhs uint) uint {
 	if lhs == 0 {
 		return rhs

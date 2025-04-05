@@ -1,48 +1,66 @@
 package main
 
 import (
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
-	"github.com/alevnyacow/metrics/internal/generator"
-	"github.com/alevnyacow/metrics/internal/utils"
+	"github.com/alevnyacow/metrics/internal/services"
 )
 
+type Callback func()
+
+func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds uint, callback Callback) Callback {
+	wg.Add(1)
+	return func(intervalInSeconds uint, callback Callback) Callback {
+		return func() {
+			defer wg.Done()
+			for {
+				time.Sleep(time.Duration(intervalInSeconds) * time.Second)
+				callback()
+			}
+		}
+	}
+}
+
+func sendPost(url string) {
+	request, requestErr := http.NewRequest("POST", url, nil)
+	if requestErr == nil {
+		request.Header.Set("Content-Type", "text/plain")
+		client := http.Client{}
+		client.Do(request)
+	}
+}
+
 func main() {
+	mutex := sync.RWMutex{}
+	wg := sync.WaitGroup{}
 	configs := config.ParseAgentConfigs()
-	counterMetrics := &generator.Counters{}
-	gaugeMetrics := &generator.Gauges{}
+	metricsCollectorService := services.NewMetricsCollectorService()
+	repetetiveGoroutineCreator := newRepetetiveGoroutineCreator(&wg)
 
-	generatorCallback := newGeneratorCallback(counterMetrics, gaugeMetrics)
-	senderCallback := newSenderCallback(configs.APIHost, counterMetrics, gaugeMetrics)
+	updatingGoroutine := repetetiveGoroutineCreator(configs.PollInterval, func() {
+		mutex.Lock()
+		defer mutex.Unlock()
+		metricsCollectorService.UpdateMetrics()
+	})
 
-	go utils.InfiniteRepetitiveCall(configs.PollInterval, generatorCallback)()
-	go utils.InfiniteRepetitiveCall(configs.ReportInterval, senderCallback)()
-	select {}
-}
-
-// Returns a callback which rewrites provided
-// counters and gauges by pointers with generated
-// metrics data.
-func newGeneratorCallback(counters *generator.Counters, gauges *generator.Gauges) func() {
-	return func() {
-		*counters = generator.GenerateCounters()
-		*gauges = generator.GenerateGauges()
-	}
-}
-
-// Returns a callback which generates links
-// of given counters and gauges and makes
-// POST requests without body for all these links.
-func newSenderCallback(apiRoot string, counters generator.MetricsWithLinks, gauges generator.MetricsWithLinks) func() {
-	return func() {
-		countersLinks := counters.UpdateLinks(apiRoot)
-		gaugesLinks := gauges.UpdateLinks(apiRoot)
-
-		for _, counterLink := range countersLinks {
-			utils.SendPost(counterLink)
+	sendingGoroutine := repetetiveGoroutineCreator(configs.ReportInterval, func() {
+		mutex.RLock()
+		defer mutex.RUnlock()
+		getUpdateCounterLink, getUpdateGaugeLink := api.MetricUpdateRoutes(configs.APIHost)
+		for _, counter := range metricsCollectorService.Counters {
+			sendPost(getUpdateCounterLink(counter))
 		}
-
-		for _, gaugeLink := range gaugesLinks {
-			utils.SendPost(gaugeLink)
+		for _, gauge := range metricsCollectorService.Gauges {
+			sendPost(getUpdateGaugeLink(gauge))
 		}
-	}
+	})
+
+	go updatingGoroutine()
+	go sendingGoroutine()
+
+	wg.Wait()
 }
