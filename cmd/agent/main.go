@@ -24,14 +24,19 @@ func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds ui
 		}
 	}
 }
-
-func sendPost(url string) {
+func sendPost(url string) (requestError error, response *http.Response, responseError error) {
 	request, requestErr := http.NewRequest("POST", url, nil)
-	if requestErr == nil {
-		request.Header.Set("Content-Type", "text/plain")
-		client := http.Client{}
-		client.Do(request)
+	if requestErr != nil {
+		requestError = requestErr
+
+		return
 	}
+
+	request.Header.Set("Content-Type", "text/plain")
+	client := http.Client{}
+	response, responseError = client.Do(request)
+
+	return
 }
 
 func main() {
