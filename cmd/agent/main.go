@@ -27,15 +27,13 @@ func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds ui
 
 func sendPost(url string) {
 	request, requestErr := http.NewRequest("POST", url, nil)
-	defer func() {
-		if request != nil && request.Body != nil {
-			request.Body.Close()
-		}
-	}()
 	if requestErr == nil {
 		request.Header.Set("Content-Type", "text/plain")
 		client := http.Client{}
-		client.Do(request)
+		response, _ := client.Do(request)
+		if response.Body != nil {
+			response.Body.Close()
+		}
 	}
 }
 
