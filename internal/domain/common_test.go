@@ -36,6 +36,6 @@ func TestMetricModelFromGauge(t *testing.T) {
 		t.Errorf("Wrong metric value - expected %v, got %v", counterValueAsString, metricFromCounter.Value)
 	}
 	if metricFromCounter.Type != domain.GaugeMetricType {
-		t.Errorf("Wrong metric type - expected %v, got %v", domain.CounterMetricType, metricFromCounter.Type)
+		t.Errorf("Wrong metric type - expected %v, got %v", domain.GaugeMetricType, metricFromCounter.Type)
 	}
 }
