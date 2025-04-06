@@ -12,6 +12,37 @@ import (
 
 type Callback func()
 
+func main() {
+	mutex := sync.RWMutex{}
+	wg := sync.WaitGroup{}
+	configs := config.ParseAgentConfigs()
+	metricsCollectionService := services.NewMetricsCollectionService()
+	repetetiveGoroutineCreator := newRepetetiveGoroutineCreator(&wg)
+
+	updatingGoroutine := repetetiveGoroutineCreator(configs.PollInterval, func() {
+		mutex.Lock()
+		defer mutex.Unlock()
+		metricsCollectionService.UpdateMetrics()
+	})
+
+	sendingGoroutine := repetetiveGoroutineCreator(configs.ReportInterval, func() {
+		mutex.RLock()
+		defer mutex.RUnlock()
+		getUpdateCounterLink, getUpdateGaugeLink := api.MetricUpdateRoutes(configs.APIHost)
+		for _, counter := range metricsCollectionService.Counters {
+			sendPost(getUpdateCounterLink(counter))
+		}
+		for _, gauge := range metricsCollectionService.Gauges {
+			sendPost(getUpdateGaugeLink(gauge))
+		}
+	})
+
+	go updatingGoroutine()
+	go sendingGoroutine()
+
+	wg.Wait()
+}
+
 func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds uint, callback Callback) Callback {
 	wg.Add(1)
 	return func(intervalInSeconds uint, callback Callback) Callback {
@@ -35,35 +66,4 @@ func sendPost(url string) {
 			response.Body.Close()
 		}
 	}
-}
-
-func main() {
-	mutex := sync.RWMutex{}
-	wg := sync.WaitGroup{}
-	configs := config.ParseAgentConfigs()
-	metricsCollectorService := services.NewMetricsCollectorService()
-	repetetiveGoroutineCreator := newRepetetiveGoroutineCreator(&wg)
-
-	updatingGoroutine := repetetiveGoroutineCreator(configs.PollInterval, func() {
-		mutex.Lock()
-		defer mutex.Unlock()
-		metricsCollectorService.UpdateMetrics()
-	})
-
-	sendingGoroutine := repetetiveGoroutineCreator(configs.ReportInterval, func() {
-		mutex.RLock()
-		defer mutex.RUnlock()
-		getUpdateCounterLink, getUpdateGaugeLink := api.MetricUpdateRoutes(configs.APIHost)
-		for _, counter := range metricsCollectorService.Counters {
-			sendPost(getUpdateCounterLink(counter))
-		}
-		for _, gauge := range metricsCollectorService.Gauges {
-			sendPost(getUpdateGaugeLink(gauge))
-		}
-	})
-
-	go updatingGoroutine()
-	go sendingGoroutine()
-
-	wg.Wait()
 }

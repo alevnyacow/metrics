@@ -18,10 +18,10 @@ func (value CounterValue) ToString() string {
 }
 
 // ToValue converts raw string counter value to actual
-// counter value. Value must be positive.
+// counter value. Value must be non-negative.
 func (rawValue CounterRawValue) ToValue() (value CounterValue, parsed bool) {
 	intValue, parsingError := strconv.ParseInt(string(rawValue), 10, 64)
-	if parsingError != nil {
+	if parsingError != nil || intValue < 0 {
 		parsed = false
 		return
 	}

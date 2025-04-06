@@ -42,14 +42,14 @@ type AgentGauges struct {
 	RandomValue domain.GaugeValue
 }
 
-// MetricsCollectorService provides logic of
-// updating and storing metrics in metrics agent.
-type MetricsCollectorService struct {
+// MetricsCollectionService provides logic of
+// updating and storing collected metrics.
+type MetricsCollectionService struct {
 	Counters []domain.Counter
 	Gauges   []domain.Gauge
 }
 
-func (service *MetricsCollectorService) generateCounters() AgentCounters {
+func (service *MetricsCollectionService) generateCounters() AgentCounters {
 	return AgentCounters{
 		PollCount: 1,
 	}
@@ -57,7 +57,7 @@ func (service *MetricsCollectorService) generateCounters() AgentCounters {
 
 // generateGauges generate gauges based on runtime.MemStats and
 // some random values
-func (service *MetricsCollectorService) generateGauges() AgentGauges {
+func (service *MetricsCollectionService) generateGauges() AgentGauges {
 	var stats runtime.MemStats
 	runtime.ReadMemStats(&stats)
 
@@ -95,7 +95,7 @@ func (service *MetricsCollectorService) generateGauges() AgentGauges {
 
 // UpdateMetrics generates actual metrics and
 // writes obtained values in service.
-func (service *MetricsCollectorService) UpdateMetrics() {
+func (service *MetricsCollectionService) UpdateMetrics() {
 	counters := service.generateCounters()
 	gauges := service.generateGauges()
 	service.Counters = counters.toMetrics()

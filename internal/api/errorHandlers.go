@@ -3,8 +3,9 @@ package api
 import "net/http"
 
 // marshalingErrorResponse takes error as a parameter
-// and returns handler function which returns 500 status
-// code and error body.
+// and returns handler function for case where server
+// could obtain requested data but could not serialize
+// this data to JSON for response.
 func marshalingErrorResponse(err error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -13,7 +14,7 @@ func marshalingErrorResponse(err error) http.HandlerFunc {
 }
 
 // unknownMetricTypeResponse returns handler function
-// in case server could not recognize metric type
+// for case where server could not recognize metric type
 // provided by user.
 func unknownMetricTypeResponse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +23,7 @@ func unknownMetricTypeResponse() http.HandlerFunc {
 }
 
 // nonExistingMetricOfKnownTypeResponse returns handler function
-// in case server recognized metric type provided by user,
+// for case where server recognized metric type provided by user,
 // but user requested non-existing metric of this type.
 func nonExistingMetricOfKnownTypeResponse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +32,7 @@ func nonExistingMetricOfKnownTypeResponse() http.HandlerFunc {
 }
 
 // notProvidedUpdateValueResponse returns handler function
-// in case user did not provide metric value when requested
+// for case where user did not provide metric value when requested
 // update of this metric.
 func notProvidedUpdateValueResponse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +41,7 @@ func notProvidedUpdateValueResponse() http.HandlerFunc {
 }
 
 // providedIncorrectUpdateValueResponse returns handler function
-// in case user provided raw string metric value when requested
+// for case where user provided raw string metric value when requested
 // update of this metric but server could not parse it to
 // actual metric value.
 func providedIncorrectUpdateValueResponse() http.HandlerFunc {

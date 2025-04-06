@@ -1,8 +1,4 @@
-// Package api is responsible for metrics web api.
-//
-// It exports MetricsController which can be created
-// via "NewController" constructor. This controller
-// is compatible with Chi.
+// Package api is responsible for metrics WEB API.
 package api
 
 import (
@@ -10,6 +6,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// MetricsController provides functionality of metrics
+// updating and obtaining metric values (for one metric
+// of any type or for all metrics) via WEB API. Compatible
+// with Chi.
 type MetricsController struct {
 	countersService *services.CountersService
 	gaugesService   *services.GaugesService

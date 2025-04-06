@@ -1,6 +1,6 @@
 // Package services contains metrics applications logic grouped by services.
 //
-// It includes counters service, gauges service and metrics collector service.
+// It includes counters service, gauges service and metrics collection service.
 package services
 
 import "github.com/alevnyacow/metrics/internal/domain"
@@ -17,8 +17,8 @@ func NewGaugesService(repository GaugesRepository) *GaugesService {
 	}
 }
 
-func NewMetricsCollectorService() *MetricsCollectorService {
-	return &MetricsCollectorService{
+func NewMetricsCollectionService() *MetricsCollectionService {
+	return &MetricsCollectionService{
 		Gauges:   make([]domain.Gauge, 0),
 		Counters: make([]domain.Counter, 0),
 	}

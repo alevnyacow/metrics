@@ -1,16 +1,17 @@
-package memstorage
+package memstorage_test
 
 import (
 	"testing"
 
 	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/alevnyacow/metrics/internal/infrastructure/memstorage"
 )
 
 var counterName = domain.CounterName("test_counter")
 var counterValue = domain.CounterValue(25)
 
 func TestCounterExists(t *testing.T) {
-	countersRepository := NewCountersRepository()
+	countersRepository := memstorage.NewCountersRepository()
 	countersRepository.Set(counterName, counterValue)
 	exists := countersRepository.Exists(counterName)
 	if !exists {
@@ -19,7 +20,7 @@ func TestCounterExists(t *testing.T) {
 }
 
 func TestCounterDoesNotExist(t *testing.T) {
-	countersRepository := NewCountersRepository()
+	countersRepository := memstorage.NewCountersRepository()
 	exists := countersRepository.Exists(counterName)
 	if exists {
 		t.Error("Found non existing counter")
@@ -27,7 +28,7 @@ func TestCounterDoesNotExist(t *testing.T) {
 }
 
 func TestCounterValue(t *testing.T) {
-	countersRepository := NewCountersRepository()
+	countersRepository := memstorage.NewCountersRepository()
 	countersRepository.Set(counterName, counterValue)
 	foundCounterValue := countersRepository.GetValue(counterName)
 	if foundCounterValue != counterValue {
@@ -36,9 +37,9 @@ func TestCounterValue(t *testing.T) {
 }
 
 func TestCountersAreEmptyAfterCreation(t *testing.T) {
-	countersRepository := NewCountersRepository()
+	countersRepository := memstorage.NewCountersRepository()
 	counters := countersRepository.GetAll()
 	if len(counters) != 0 {
-		t.Error("Not empty after creation")
+		t.Error("Memstorage counters are not empty after creation")
 	}
 }

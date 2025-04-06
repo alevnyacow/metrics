@@ -8,7 +8,7 @@ const (
 )
 
 // Metric is a common metric model. It can be
-// obtained from Gauge and Metric models. Metric
+// obtained from Gauge and Counter models. Metric
 // can be serialized in JSON.
 type Metric struct {
 	Name  string     `json:"name"`
