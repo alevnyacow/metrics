@@ -31,9 +31,9 @@ func TestMetricModelFromGauge(t *testing.T) {
 	if metricFromCounter.Name != string(gaugeName) {
 		t.Errorf("Wrong metric name - expected %v, got %v", gaugeName, metricFromCounter.Name)
 	}
-	counterValueAsString := gaugeValue.ToString()
-	if metricFromCounter.Value != counterValueAsString {
-		t.Errorf("Wrong metric value - expected %v, got %v", counterValueAsString, metricFromCounter.Value)
+	gaugeValueAsString := gaugeValue.ToString()
+	if metricFromCounter.Value != gaugeValueAsString {
+		t.Errorf("Wrong metric value - expected %v, got %v", gaugeValueAsString, metricFromCounter.Value)
 	}
 	if metricFromCounter.Type != domain.GaugeMetricType {
 		t.Errorf("Wrong metric type - expected %v, got %v", domain.GaugeMetricType, metricFromCounter.Type)
