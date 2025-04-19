@@ -61,8 +61,8 @@ func sendPost(url string) {
 	if requestErr == nil {
 		request.Header.Set("Content-Type", "text/plain")
 		client := http.Client{}
-		response, _ := client.Do(request)
-		if response.Body != nil {
+		response, error := client.Do(request)
+		if error == nil && response.Body != nil {
 			response.Body.Close()
 		}
 	}
