@@ -18,7 +18,7 @@ const valuePathParam = "value"
 
 func routes() (update string, updateWithJSON string, getMetric string, getAllMetrics string) {
 	update = fmt.Sprintf("/%s/{%s}/{%s}/{%s}", UpdateLinkRoot, typePathParam, namePathParam, valuePathParam)
-	updateWithJSON = fmt.Sprintf("/%s", UpdateLinkRoot)
+	updateWithJSON = fmt.Sprintf("/%s/", UpdateLinkRoot)
 	getMetric = fmt.Sprintf("/%s/{%s}/{%s}", ValueLinkRoot, typePathParam, namePathParam)
 	getAllMetrics = "/"
 	return
