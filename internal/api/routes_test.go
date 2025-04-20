@@ -12,7 +12,7 @@ func TestRoutePathValues(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expectedUpdateValue, update)
 	}
 
-	expectedUpdateWithJSONValue := "/update"
+	expectedUpdateWithJSONValue := "/update/"
 	if updateWithJSON != expectedUpdateWithJSONValue {
 		t.Errorf("Expected %s, got %s", expectedUpdateWithJSONValue, updateWithJSON)
 	}
