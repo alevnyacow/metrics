@@ -19,7 +19,7 @@ func NewGaugesService(repository GaugesRepository) *GaugesService {
 
 func NewMetricsCollectionService() *MetricsCollectionService {
 	return &MetricsCollectionService{
-		Gauges:   make([]domain.Gauge, 0),
-		Counters: make([]domain.Counter, 0),
+		gauges:   make([]domain.Gauge, 0),
+		counters: make([]domain.Counter, 0),
 	}
 }

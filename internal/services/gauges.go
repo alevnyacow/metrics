@@ -8,17 +8,6 @@ type GaugesService struct {
 	repository GaugesRepository
 }
 
-func (service *GaugesService) SetWithRawValue(key domain.GaugeName, rawValue domain.GaugeRawValue) (success bool) {
-	value, parsed := rawValue.ToValue()
-	if !parsed {
-		success = false
-		return
-	}
-	success = true
-	service.repository.Set(key, value)
-	return
-}
-
 func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric, exists bool) {
 	if !service.repository.Exists(key) {
 		exists = false
@@ -28,6 +17,10 @@ func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric,
 	gaugeDTO := service.repository.Get(key)
 	dto = gaugeDTO.ToMetricModel()
 	return
+}
+
+func (service *GaugesService) Set(key domain.GaugeName, value domain.GaugeValue) {
+	service.repository.Set(key, value)
 }
 
 func (service *GaugesService) GetAll() (metricDTOs []domain.Metric) {

@@ -5,6 +5,7 @@ import "strconv"
 type GaugeName string
 type GaugeValue float64
 type GaugeRawValue string
+type GaugeRawFloatValue float64
 
 // Gauge model represents gauge metric. Can be
 // converted to common Metric model.
@@ -23,6 +24,16 @@ func (rawValue GaugeRawValue) ToValue() (value GaugeValue, parsed bool) {
 	}
 	parsed = true
 	value = GaugeValue(floatValue)
+	return
+}
+
+func (rawFloatValue GaugeRawFloatValue) ToValue() (value GaugeValue, parsed bool) {
+	if rawFloatValue < 0 {
+		parsed = false
+		return
+	}
+	parsed = true
+	value = GaugeValue(rawFloatValue)
 	return
 }
 

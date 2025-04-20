@@ -16,14 +16,15 @@ const typePathParam = "type"
 const namePathParam = "name"
 const valuePathParam = "value"
 
-func routes() (update string, getMetric string, getAllMetrics string) {
+func routes() (update string, updateWithJSON string, getMetric string, getAllMetrics string) {
 	update = fmt.Sprintf("/%s/{%s}/{%s}/{%s}", UpdateLinkRoot, typePathParam, namePathParam, valuePathParam)
+	updateWithJSON = fmt.Sprintf("/%s", UpdateLinkRoot)
 	getMetric = fmt.Sprintf("/%s/{%s}/{%s}", ValueLinkRoot, typePathParam, namePathParam)
 	getAllMetrics = "/"
 	return
 }
 
-func MetricUpdateRoutes(apiRoot string) (
+func MetricUpdateByPathRoutes(apiRoot string) (
 	forCounter func(counter domain.Counter) string,
 	forGauge func(gauge domain.Gauge) string,
 ) {
@@ -48,4 +49,12 @@ func MetricUpdateRoutes(apiRoot string) (
 		)
 	}
 	return
+}
+
+func MetricUpdateByJSONRoute(apiRoot string) string {
+	return fmt.Sprintf(
+		"%s/%s",
+		apiRoot,
+		UpdateLinkRoot,
+	)
 }

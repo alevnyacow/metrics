@@ -15,3 +15,11 @@ type Metric struct {
 	Value string     `json:"value"`
 	Type  MetricType `json:"type"`
 }
+
+func (metric Metric) IsGauge() bool {
+	return metric.Type == GaugeMetricType
+}
+
+func (metric Metric) IsCounter() bool {
+	return metric.Type == CounterMetricType
+}

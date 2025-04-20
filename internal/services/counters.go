@@ -8,20 +8,14 @@ type CountersService struct {
 	repository CountersRepository
 }
 
-func (service *CountersService) SetWithRawValue(key domain.CounterName, rawValue domain.CounterRawValue) (success bool) {
-	value, parsed := rawValue.ToValue()
-	if !parsed {
-		success = false
-		return
-	}
-	success = true
+func (service *CountersService) Update(key domain.CounterName, value domain.CounterValue) {
 	if !service.repository.Exists(key) {
 		service.repository.Set(key, value)
 		return
 	}
 	summedValue := value + service.repository.GetValue(key)
 	service.repository.Set(key, summedValue)
-	return
+
 }
 
 func (service *CountersService) GetByKey(key domain.CounterName) (dto domain.Metric, exists bool) {

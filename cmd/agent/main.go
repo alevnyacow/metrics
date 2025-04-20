@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
@@ -16,6 +18,7 @@ func main() {
 	mutex := sync.RWMutex{}
 	wg := sync.WaitGroup{}
 	configs := config.ParseAgentConfigs()
+	updateURL := api.MetricUpdateByJSONRoute(configs.APIHost)
 	metricsCollectionService := services.NewMetricsCollectionService()
 	repetetiveGoroutineCreator := newRepetetiveGoroutineCreator(&wg)
 
@@ -28,12 +31,12 @@ func main() {
 	sendingGoroutine := repetetiveGoroutineCreator(configs.ReportInterval, func() {
 		mutex.RLock()
 		defer mutex.RUnlock()
-		getUpdateCounterLink, getUpdateGaugeLink := api.MetricUpdateRoutes(configs.APIHost)
-		for _, counter := range metricsCollectionService.Counters {
-			sendPost(getUpdateCounterLink(counter))
-		}
-		for _, gauge := range metricsCollectionService.Gauges {
-			sendPost(getUpdateGaugeLink(gauge))
+		for _, metric := range metricsCollectionService.CollectedMetrics() {
+			metricDTO := api.MapDomainMetricToMetricDTO(metric)
+			metricJSONData, marshalingError := json.Marshal(metricDTO)
+			if marshalingError == nil {
+				http.Post(updateURL, "application/json", bytes.NewBuffer(metricJSONData))
+			}
 		}
 	})
 
@@ -52,18 +55,6 @@ func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds ui
 				time.Sleep(time.Duration(intervalInSeconds) * time.Second)
 				callback()
 			}
-		}
-	}
-}
-
-func sendPost(url string) {
-	request, requestErr := http.NewRequest("POST", url, nil)
-	if requestErr == nil {
-		request.Header.Set("Content-Type", "text/plain")
-		client := http.Client{}
-		response, error := client.Do(request)
-		if error == nil && response.Body != nil {
-			response.Body.Close()
 		}
 	}
 }

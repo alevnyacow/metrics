@@ -5,6 +5,7 @@ import "strconv"
 type CounterName string
 type CounterValue int64
 type CounterRawValue string
+type CounterRawIntValue int64
 
 // Counter model represents counter metric. Can be
 // converted to common Metric model.
@@ -27,6 +28,16 @@ func (rawValue CounterRawValue) ToValue() (value CounterValue, parsed bool) {
 	}
 	parsed = true
 	value = CounterValue(intValue)
+	return
+}
+
+func (rawIntValue CounterRawIntValue) ToValue() (value CounterValue, parsed bool) {
+	if rawIntValue < 0 {
+		parsed = false
+		return
+	}
+	parsed = true
+	value = CounterValue(rawIntValue)
 	return
 }
 

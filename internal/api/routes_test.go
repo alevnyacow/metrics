@@ -5,11 +5,16 @@ import (
 )
 
 func TestRoutePathValues(t *testing.T) {
-	update, getMetric, getAllMetrics := routes()
+	update, updateWithJSON, getMetric, getAllMetrics := routes()
 
 	expectedUpdateValue := "/update/{type}/{name}/{value}"
 	if update != expectedUpdateValue {
 		t.Errorf("Expected %s, got %s", expectedUpdateValue, update)
+	}
+
+	expectedUpdateWithJSONValue := "/update"
+	if updateWithJSON != expectedUpdateWithJSONValue {
+		t.Errorf("Expected %s, got %s", expectedUpdateWithJSONValue, updateWithJSON)
 	}
 
 	expectedGetMetricValue := "/value/{type}/{name}"
