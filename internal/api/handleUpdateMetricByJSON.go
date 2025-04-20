@@ -36,6 +36,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 			marshalingErrorResponse(marshalingError)(w, r)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(metricJSON)
 
 	case "counter":
@@ -54,6 +55,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 			marshalingErrorResponse(marshalingError)(w, r)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(metricJSON)
 
 	default:
