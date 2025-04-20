@@ -53,7 +53,7 @@ func MetricUpdateByPathRoutes(apiRoot string) (
 
 func MetricUpdateByJSONRoute(apiRoot string) string {
 	return fmt.Sprintf(
-		"%s/%s",
+		"%s/%s/",
 		apiRoot,
 		UpdateLinkRoot,
 	)
