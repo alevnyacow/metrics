@@ -35,7 +35,12 @@ func main() {
 			metricDTO := api.MapDomainMetricToMetricDTO(metric)
 			metricJSONData, marshalingError := json.Marshal(metricDTO)
 			if marshalingError == nil {
-				http.Post(updateURL, "application/json", bytes.NewBuffer(metricJSONData))
+				response, error := http.Post(updateURL, "application/json", bytes.NewBuffer(metricJSONData))
+				defer func() {
+					if response != nil && response.Body != nil && error == nil {
+						response.Body.Close()
+					}
+				}()
 			}
 		}
 	})
