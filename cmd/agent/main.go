@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"net/http"
 	"sync"
@@ -35,7 +36,7 @@ func main() {
 			metricDTO := api.MapDomainMetricToMetricDTO(metric)
 			metricJSONData, marshalingError := json.Marshal(metricDTO)
 			if marshalingError == nil {
-				response, error := http.Post(updateURL, "application/json", bytes.NewBuffer(metricJSONData))
+				response, error := sendPostWithGZippedBody(updateURL, metricJSONData)
 				defer func() {
 					if response != nil && response.Body != nil && error == nil {
 						response.Body.Close()
@@ -62,4 +63,25 @@ func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds ui
 			}
 		}
 	}
+}
+
+func sendPostWithGZippedBody(url string, body []byte) (*http.Response, error) {
+	buffer := bytes.Buffer{}
+	writer := gzip.NewWriter(&buffer)
+	_, err := writer.Write(body)
+	if err != nil {
+		return nil, err
+	}
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+	request, requestErr := http.NewRequest("POST", url, &buffer)
+	if requestErr != nil {
+		return nil, requestErr
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Encoding", "gzip")
+	request.Header.Set("Accept-Encoding", "gzip")
+	client := http.Client{}
+	return client.Do(request)
 }

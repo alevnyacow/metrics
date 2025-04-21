@@ -30,10 +30,12 @@ func NewController(
 // handlers from API Metrics Controller.
 func (controller *MetricsController) AddInChiMux(chi *chi.Mux) {
 	update, updateWithJSON, getMetric, getAllMetrics, getByJSON := routes()
+	chi.Use(withGZipResponse)
+	chi.Use(withGZipRequest)
 	chi.Use(withLogging)
+	chi.Get(getMetric, controller.handleGetMetricValueByPathValue)
+	chi.Get(getAllMetrics, controller.handleGetAllMetrics)
 	chi.Post(update, controller.updateMetricByPathValues)
 	chi.Post(updateWithJSON, controller.handleUpdateMetricByJSON)
 	chi.Post(getByJSON, controller.handleGetMetricByJSON)
-	chi.Get(getMetric, controller.handleGetMetricValueByPathValue)
-	chi.Get(getAllMetrics, controller.handleGetAllMetrics)
 }
