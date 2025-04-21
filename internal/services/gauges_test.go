@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/alevnyacow/metrics/internal/domain"
-	"github.com/alevnyacow/metrics/internal/infrastructure/memstorage"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/alevnyacow/metrics/internal/store/memstorage"
 )
 
 var gaugeName = domain.GaugeName("test_counter")
@@ -13,7 +13,7 @@ var gaugeValue = domain.GaugeValue(100)
 
 func TestGaugeValue(t *testing.T) {
 	gaugesRepo := memstorage.NewGaugesRepository()
-	gaugesService := services.NewGaugesService(gaugesRepo)
+	gaugesService := services.NewGaugesService(gaugesRepo, func() {})
 	gaugesService.Set(gaugeName, gaugeValue)
 	gauge, found := gaugesService.GetByKey(gaugeName)
 	if !found {

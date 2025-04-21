@@ -5,7 +5,8 @@ import "github.com/alevnyacow/metrics/internal/domain"
 // CountersService provides logic of working with
 // gauge metrics.
 type GaugesService struct {
-	repository GaugesRepository
+	repository  GaugesRepository
+	afterUpdate func()
 }
 
 func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric, exists bool) {
@@ -21,6 +22,7 @@ func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric,
 
 func (service *GaugesService) Set(key domain.GaugeName, value domain.GaugeValue) {
 	service.repository.Set(key, value)
+	service.afterUpdate()
 }
 
 func (service *GaugesService) GetAll() (metricDTOs []domain.Metric) {

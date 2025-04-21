@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/alevnyacow/metrics/internal/domain"
-	"github.com/alevnyacow/metrics/internal/infrastructure/memstorage"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/alevnyacow/metrics/internal/store/memstorage"
 )
 
 var counterName = domain.CounterName("test_counter")
@@ -13,7 +13,7 @@ var counterValue = domain.CounterValue(100)
 
 func TestCounterValue(t *testing.T) {
 	countersRepo := memstorage.NewCountersRepository()
-	countersService := services.NewCountersService(countersRepo)
+	countersService := services.NewCountersService(countersRepo, func() {})
 	countersService.Update(counterName, counterValue)
 	counter, found := countersService.GetByKey(counterName)
 	if !found {

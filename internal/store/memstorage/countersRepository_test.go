@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alevnyacow/metrics/internal/domain"
-	"github.com/alevnyacow/metrics/internal/infrastructure/memstorage"
+	"github.com/alevnyacow/metrics/internal/store/memstorage"
 )
 
 var counterName = domain.CounterName("test_counter")

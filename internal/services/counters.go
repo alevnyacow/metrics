@@ -5,7 +5,8 @@ import "github.com/alevnyacow/metrics/internal/domain"
 // CountersService provides logic of working with
 // counters metrics.
 type CountersService struct {
-	repository CountersRepository
+	repository  CountersRepository
+	afterUpdate func()
 }
 
 func (service *CountersService) Update(key domain.CounterName, value domain.CounterValue) {
@@ -15,7 +16,7 @@ func (service *CountersService) Update(key domain.CounterName, value domain.Coun
 	}
 	summedValue := value + service.repository.GetValue(key)
 	service.repository.Set(key, summedValue)
-
+	service.afterUpdate()
 }
 
 func (service *CountersService) GetByKey(key domain.CounterName) (dto domain.Metric, exists bool) {

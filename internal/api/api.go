@@ -34,8 +34,8 @@ func (controller *MetricsController) AddInChiMux(chi *chi.Mux) {
 	chi.Use(middleware.Compress(5, "text/html", "application/json"))
 	chi.Use(withLogging)
 	chi.Get(getMetric, controller.handleGetMetricValueByPathValue)
-	chi.With(GzipMiddleware).Get(getAllMetrics, controller.handleGetAllMetrics)
+	chi.With(withGzip).Get(getAllMetrics, controller.handleGetAllMetrics)
 	chi.Post(update, controller.updateMetricByPathValues)
-	chi.With(GzipMiddleware).Post(updateWithJSON, controller.handleUpdateMetricByJSON)
+	chi.With(withGzip).Post(updateWithJSON, controller.handleUpdateMetricByJSON)
 	chi.Post(getByJSON, controller.handleGetMetricByJSON)
 }

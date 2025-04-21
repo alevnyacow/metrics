@@ -2,23 +2,83 @@ package main
 
 import (
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
-	"github.com/alevnyacow/metrics/internal/infrastructure/memstorage"
+	"github.com/alevnyacow/metrics/internal/domain"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/alevnyacow/metrics/internal/store/filestorage"
+	"github.com/alevnyacow/metrics/internal/store/memstorage"
 	"github.com/go-chi/chi/v5"
 )
 
-func main() {
-	configs := config.ParseServerConfigs()
+var countersService *services.CountersService
+var gaugesService *services.GaugesService
+var configs = config.ParseServerConfigs()
 
+func init() {
+	wg := sync.WaitGroup{}
+	afterUpdate := func() {}
+	fileStorage := filestorage.New(configs.FileStoragePath)
 	inMemoryCountersRepository := memstorage.NewCountersRepository()
 	inMemoryGaugesRepository := memstorage.NewGaugesRepository()
 
-	countersService := services.NewCountersService(inMemoryCountersRepository)
-	gaugesService := services.NewGaugesService(inMemoryGaugesRepository)
+	saveAllMetricsToFile := func() {
+		allMetrics := make([]domain.Metric, 0)
+		for _, counter := range inMemoryCountersRepository.GetAll() {
+			allMetrics = append(allMetrics, counter.ToMetricModel())
+		}
+		for _, gauge := range inMemoryGaugesRepository.GetAll() {
+			allMetrics = append(allMetrics, gauge.ToMetricModel())
+		}
+		fileStorage.Save(allMetrics)
+	}
 
+	if configs.Restore {
+		data, err := fileStorage.Load()
+		if err == nil {
+			for _, metric := range data {
+				if metric.IsCounter() {
+					value, parsed := domain.CounterRawValue(metric.Value).ToValue()
+					if parsed && metric.Name != "" {
+						inMemoryCountersRepository.Set(domain.CounterName(metric.Name), value)
+					}
+				}
+				if metric.IsGauge() {
+					value, parsed := domain.GaugeRawValue(metric.Value).ToValue()
+					if parsed && metric.Name != "" {
+						inMemoryGaugesRepository.Set(domain.GaugeName(metric.Name), value)
+					}
+				}
+			}
+		}
+
+		if configs.StoreInterval == 0 {
+			afterUpdate = saveAllMetricsToFile
+		}
+
+		if configs.StoreInterval > 0 {
+			wg.Add(1)
+			go func() {
+				defer func() {
+					wg.Done()
+				}()
+				for {
+					time.Sleep(time.Duration(configs.StoreInterval) * time.Second)
+					saveAllMetricsToFile()
+				}
+			}()
+		}
+	}
+
+	countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
+	gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
+
+}
+
+func main() {
 	chiRouter := chi.NewRouter()
 	apiController := api.NewController(countersService, gaugesService)
 	apiController.AddInChiMux(chiRouter)

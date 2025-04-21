@@ -2,16 +2,23 @@ package config
 
 import (
 	"flag"
+	"os"
 
 	"github.com/caarlos0/env"
 )
 
 type ServerConfigs struct {
-	APIHost string `env:"ADDRESS"`
+	APIHost         string `env:"ADDRESS"`
+	StoreInterval   uint   `env:"STORE_INTERVAL"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	Restore         bool   `env:"RESTORE"`
 }
 
 var defaultServerConfigs = ServerConfigs{
-	APIHost: "localhost:8080",
+	APIHost:         "localhost:8080",
+	StoreInterval:   0,
+	FileStoragePath: "metrics.json",
+	Restore:         true,
 }
 
 // parseServerEnvData returns parsed server configuration data
@@ -22,6 +29,7 @@ func parseServerEnvData() ServerConfigs {
 	if err != nil {
 		return ServerConfigs{}
 	}
+
 	return configs
 }
 
@@ -30,17 +38,33 @@ func parseServerEnvData() ServerConfigs {
 // values if arguments were not provided.
 func parseServerArgsConfigs() ServerConfigs {
 	apiHostPointer := flag.String("a", defaultServerConfigs.APIHost, "API host")
+	storeIntervalPointer := flag.Uint("i", defaultServerConfigs.StoreInterval, "File storage interval")
+	fileStoragePathPointer := flag.String("f", defaultServerConfigs.FileStoragePath, "File storage path")
+	restorePointer := flag.Bool("r", defaultServerConfigs.Restore, "Flag to restore data from file")
+
 	flag.Parse()
 
 	return ServerConfigs{
-		APIHost: *apiHostPointer,
+		APIHost:         *apiHostPointer,
+		StoreInterval:   *storeIntervalPointer,
+		FileStoragePath: *fileStoragePathPointer,
+		Restore:         *restorePointer,
 	}
 }
 
 // mergeServerConfigs merges server env configs and server
 // arg configs with prior to env configs.
 func mergeServerConfigs(envConfigs ServerConfigs, argsConfigs ServerConfigs) ServerConfigs {
+	restore := func() bool {
+		if os.Getenv("RESTORE") == "" {
+			return argsConfigs.Restore
+		}
+		return envConfigs.Restore
+	}
 	return ServerConfigs{
-		APIHost: selectExistingString(envConfigs.APIHost, argsConfigs.APIHost),
+		APIHost:         selectExistingString(envConfigs.APIHost, argsConfigs.APIHost),
+		StoreInterval:   selectExistingUInt(envConfigs.StoreInterval, argsConfigs.StoreInterval),
+		FileStoragePath: selectExistingString(envConfigs.FileStoragePath, argsConfigs.FileStoragePath),
+		Restore:         restore(),
 	}
 }
