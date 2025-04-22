@@ -49,3 +49,19 @@ func providedIncorrectUpdateValueResponse() http.HandlerFunc {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
+
+// unparsebleCompressedDataFromClient returns handler function
+// for case where client provided unparseble compressed data.
+func unparsebleCompressedDataFromClient() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
+// compressingDataTrouble returns handler function for case
+// where there were compressing data troubles on server.
+func compressingDataTrouble() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
