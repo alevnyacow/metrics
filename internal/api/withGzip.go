@@ -66,8 +66,8 @@ func withGzip(handler http.Handler) http.Handler {
 		}
 
 		clientAcceptsGZip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-		clientAcceptsHtml := strings.Contains(r.Header.Get("Accept"), "text/html")
-		returnCompressedData := clientAcceptsGZip && clientAcceptsHtml
+		clientAcceptsHTML := strings.Contains(r.Header.Get("Accept"), "text/html")
+		returnCompressedData := clientAcceptsGZip && clientAcceptsHTML
 		if returnCompressedData {
 			handleGzipResponse(w, r, handler)
 			return

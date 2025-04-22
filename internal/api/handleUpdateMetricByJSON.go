@@ -22,43 +22,22 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 	switch payload.MType {
 	case "gauge":
 		value, parsed := domain.GaugeRawFloatValue(*payload.Value).ToValue()
-		if parsed {
-			controller.gaugesService.Set(domain.GaugeName(payload.ID), value)
-		}
-		updatedGauge, exists := controller.gaugesService.GetByKey(domain.GaugeName(payload.ID))
-		if !exists {
-			nonExistingMetricOfKnownTypeResponse()(w, r)
+		if !parsed {
+			providedIncorrectUpdateValueResponse()(w, r)
 			return
 		}
-		metricDTO := MapDomainMetricToMetricDTO(updatedGauge)
-		metricJSON, marshalingError := json.Marshal(metricDTO)
-		if marshalingError != nil {
-			marshalingErrorResponse(marshalingError)(w, r)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(metricJSON)
-
+		controller.gaugesService.Set(domain.GaugeName(payload.ID), value)
 	case "counter":
 		value, parsed := domain.CounterRawIntValue(*payload.Delta).ToValue()
-		if parsed {
-			controller.countersService.Update(domain.CounterName(payload.ID), value)
-		}
-		updatedCounter, exists := controller.countersService.GetByKey(domain.CounterName(payload.ID))
-		if !exists {
-			nonExistingMetricOfKnownTypeResponse()(w, r)
+		if !parsed {
+			providedIncorrectUpdateValueResponse()(w, r)
 			return
 		}
-		metricDTO := MapDomainMetricToMetricDTO(updatedCounter)
-		metricJSON, marshalingError := json.Marshal(metricDTO)
-		if marshalingError != nil {
-			marshalingErrorResponse(marshalingError)(w, r)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(metricJSON)
-
+		controller.countersService.Update(domain.CounterName(payload.ID), value)
 	default:
 		unknownMetricTypeResponse()(w, r)
+		return
 	}
+
+	controller.handleGetMetricByJSON(w, r)
 }
