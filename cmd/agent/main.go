@@ -48,11 +48,13 @@ func main() {
 		for _, metric := range metricsCollectionService.CollectedMetrics() {
 			metricDTO := api.MapDomainMetricToMetricDTO(metric)
 			metricJSONData, marshalingError := json.Marshal(metricDTO)
-			if marshalingError == nil {
-				err := sendPostWithGZippedBody(updateURL, metricJSONData)
-				if err != nil {
-					log.Err(err).Msg("Could not send metric update request")
-				}
+			if marshalingError != nil {
+				log.Err(marshalingError).Msg("Error while marshaling metrics DTO")
+				return
+			}
+			requestErr := sendPostWithGZippedBody(updateURL, metricJSONData)
+			if requestErr != nil {
+				log.Err(requestErr).Msg("Could not send metric update request")
 			}
 		}
 	})
