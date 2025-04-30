@@ -11,9 +11,22 @@ import (
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/go-resty/resty/v2"
+	"github.com/rs/zerolog/log"
 )
 
 type Callback func()
+
+var client *resty.Client
+
+func init() {
+	client = resty.New()
+	client.AddRetryCondition(
+		func(r *resty.Response, err error) bool {
+			return err != nil || r.StatusCode() == http.StatusTooManyRequests
+		},
+	)
+}
 
 func main() {
 	mutex := sync.RWMutex{}
@@ -36,12 +49,10 @@ func main() {
 			metricDTO := api.MapDomainMetricToMetricDTO(metric)
 			metricJSONData, marshalingError := json.Marshal(metricDTO)
 			if marshalingError == nil {
-				response, error := sendPostWithGZippedBody(updateURL, metricJSONData)
-				defer func() {
-					if response != nil && response.Body != nil && error == nil {
-						response.Body.Close()
-					}
-				}()
+				err := sendPostWithGZippedBody(updateURL, metricJSONData)
+				if err != nil {
+					log.Err(err).Msg("Could not send metric update request")
+				}
 			}
 		}
 	})
@@ -65,23 +76,29 @@ func newRepetetiveGoroutineCreator(wg *sync.WaitGroup) func(intervalInSeconds ui
 	}
 }
 
-func sendPostWithGZippedBody(url string, body []byte) (*http.Response, error) {
+func gzippedBytes(data []byte) ([]byte, error) {
 	buffer := bytes.Buffer{}
 	writer := gzip.NewWriter(&buffer)
-	_, err := writer.Write(body)
+	_, err := writer.Write(data)
 	if err != nil {
 		return nil, err
 	}
 	if err := writer.Close(); err != nil {
 		return nil, err
 	}
-	request, requestErr := http.NewRequest("POST", url, &buffer)
-	if requestErr != nil {
-		return nil, requestErr
+	return buffer.Bytes(), nil
+}
+
+func sendPostWithGZippedBody(url string, body []byte) error {
+	gzippedData, gzipError := gzippedBytes(body)
+	if gzipError != nil {
+		return gzipError
 	}
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Content-Encoding", "gzip")
-	request.Header.Set("Accept-Encoding", "gzip")
-	client := http.Client{}
-	return client.Do(request)
+	_, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetHeader("Content-Encoding", "gzip").
+		SetHeader("Accept-Encoding", "gzip").
+		SetBody(gzippedData).
+		Post(url)
+	return err
 }

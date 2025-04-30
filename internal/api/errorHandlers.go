@@ -1,6 +1,11 @@
 package api
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+
+	"github.com/rs/zerolog/log"
+)
 
 // marshalingErrorResponse takes error as a parameter
 // and returns handler function for case where server
@@ -8,6 +13,7 @@ import "net/http"
 // this data to JSON for response.
 func marshalingErrorResponse(err error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(err).Msg("Error on marshaling")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 	}
@@ -16,8 +22,9 @@ func marshalingErrorResponse(err error) http.HandlerFunc {
 // unknownMetricTypeResponse returns handler function
 // for case where server could not recognize metric type
 // provided by user.
-func unknownMetricTypeResponse() http.HandlerFunc {
+func unknownMetricTypeResponse(unknownMetricType string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(errors.New(unknownMetricType)).Msg("Unknown metric type")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
@@ -25,8 +32,9 @@ func unknownMetricTypeResponse() http.HandlerFunc {
 // nonExistingMetricOfKnownTypeResponse returns handler function
 // for case where server recognized metric type provided by user,
 // but user requested non-existing metric of this type.
-func nonExistingMetricOfKnownTypeResponse() http.HandlerFunc {
+func nonExistingMetricOfKnownTypeResponse(metricName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(errors.New(metricName)).Msg("Non existing metric request")
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
@@ -36,6 +44,7 @@ func nonExistingMetricOfKnownTypeResponse() http.HandlerFunc {
 // update of this metric.
 func notProvidedUpdateValueResponse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(errors.New("no update value")).Msg("Error on metric update")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
@@ -44,24 +53,9 @@ func notProvidedUpdateValueResponse() http.HandlerFunc {
 // for case where user provided raw string metric value when requested
 // update of this metric but server could not parse it to
 // actual metric value.
-func providedIncorrectUpdateValueResponse() http.HandlerFunc {
+func providedIncorrectUpdateValueResponse(notParsedValue string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-}
-
-// unparsebleCompressedDataFromClient returns handler function
-// for case where client provided unparseble compressed data.
-func unparsebleCompressedDataFromClient() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-}
-
-// compressingDataTrouble returns handler function for case
-// where there were compressing data troubles on server.
-func compressingDataTrouble() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(errors.New(notParsedValue + " string value could not be parsed")).Msg("Error on metric update")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }

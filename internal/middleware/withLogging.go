@@ -1,4 +1,4 @@
-package api
+package middleware
 
 import (
 	"net/http"
@@ -7,35 +7,30 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type responseData struct {
+type loggingResponseWriter struct {
+	http.ResponseWriter
 	contentLength int
 	statusCode    int
 }
 
-type loggingResponseWriter struct {
-	http.ResponseWriter
-	responseData *responseData
-}
-
 func (loggingW *loggingResponseWriter) Write(data []byte) (int, error) {
 	size, error := loggingW.ResponseWriter.Write(data)
-	loggingW.responseData.contentLength += size
+	loggingW.contentLength += size
 	return size, error
 }
 
 func (loggingW *loggingResponseWriter) WriteHeader(statusCode int) {
 	loggingW.ResponseWriter.WriteHeader(statusCode)
-	loggingW.responseData.statusCode = statusCode
+	loggingW.statusCode = statusCode
 }
 
-func withLogging(handler http.Handler) http.Handler {
+func WithLogging(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		responseData := &responseData{contentLength: 0, statusCode: 200}
-		loggingW := loggingResponseWriter{ResponseWriter: w, responseData: responseData}
+		loggingW := loggingResponseWriter{ResponseWriter: w, contentLength: 0, statusCode: 200}
 		handler.ServeHTTP(&loggingW, r)
 		duration := time.Since(start)
 		log.Info().Str("URI", r.RequestURI).Str("Method", r.Method).Dur("Duration", duration).Msg("Request")
-		log.Info().Int("Status", responseData.statusCode).Int("Content length", responseData.contentLength).Msg("Response")
+		log.Info().Int("Status", loggingW.statusCode).Int("Content length", loggingW.contentLength).Msg("Response")
 	})
 }

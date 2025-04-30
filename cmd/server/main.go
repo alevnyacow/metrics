@@ -12,6 +12,7 @@ import (
 	"github.com/alevnyacow/metrics/internal/store/filestorage"
 	"github.com/alevnyacow/metrics/internal/store/memstorage"
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
 )
 
 var countersService *services.CountersService
@@ -82,6 +83,12 @@ func main() {
 	chiRouter := chi.NewRouter()
 	apiController := api.NewController(countersService, gaugesService)
 	apiController.AddInChiMux(chiRouter)
-
-	http.ListenAndServe(configs.APIHost, chiRouter)
+	server := &http.Server{
+		Addr:    configs.APIHost,
+		Handler: chiRouter,
+	}
+	serverStartingError := server.ListenAndServe()
+	if serverStartingError != nil {
+		log.Err(serverStartingError).Msg("Could not start metrics server")
+	}
 }

@@ -1,6 +1,9 @@
 package services
 
-import "github.com/alevnyacow/metrics/internal/domain"
+import (
+	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/rs/zerolog/log"
+)
 
 // CountersService provides logic of working with
 // gauge metrics.
@@ -23,6 +26,8 @@ func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric,
 func (service *GaugesService) Set(key domain.GaugeName, value domain.GaugeValue) {
 	service.repository.Set(key, value)
 	service.afterUpdate()
+	log.Info().Str("Gauge name", string(key)).Str("Gauge value", value.ToString()).Msg("Setted gauge")
+
 }
 
 func (service *GaugesService) GetAll() (metricDTOs []domain.Metric) {

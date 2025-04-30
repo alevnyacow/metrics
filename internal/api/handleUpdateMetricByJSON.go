@@ -16,7 +16,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		return
 	}
 	if payload.ID == "" {
-		nonExistingMetricOfKnownTypeResponse()(w, r)
+		nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 		return
 	}
 	switch payload.MType {
@@ -27,7 +27,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		}
 		updatedGauge, exists := controller.gaugesService.GetByKey(domain.GaugeName(payload.ID))
 		if !exists {
-			nonExistingMetricOfKnownTypeResponse()(w, r)
+			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return
 		}
 		metricDTO := MapDomainMetricToMetricDTO(updatedGauge)
@@ -46,7 +46,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		}
 		updatedCounter, exists := controller.countersService.GetByKey(domain.CounterName(payload.ID))
 		if !exists {
-			nonExistingMetricOfKnownTypeResponse()(w, r)
+			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return
 		}
 		metricDTO := MapDomainMetricToMetricDTO(updatedCounter)
@@ -59,6 +59,6 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		w.Write(metricJSON)
 
 	default:
-		unknownMetricTypeResponse()(w, r)
+		unknownMetricTypeResponse(payload.MType)(w, r)
 	}
 }

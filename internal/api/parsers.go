@@ -9,12 +9,12 @@ import (
 // parseMetricType tries to parse metric type from path
 // values. If there was no provided value or it does not
 // correspond to known metric types, success is returned as false.
-func parseMetricType(request *http.Request) (metricType domain.MetricType, success bool) {
+func parseMetricType(request *http.Request) (metricType domain.MetricType, rawValue string, success bool) {
 	pathParamToMetricType := map[string]domain.MetricType{
 		GaugeLinkPath:   domain.GaugeMetricType,
 		CounterLinkPath: domain.CounterMetricType,
 	}
-	metricTypeFromPath := request.PathValue(typePathParam)
-	metricType, success = pathParamToMetricType[metricTypeFromPath]
+	rawValue = request.PathValue(typePathParam)
+	metricType, success = pathParamToMetricType[rawValue]
 	return
 }

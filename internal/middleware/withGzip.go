@@ -1,9 +1,11 @@
-package api
+package middleware
 
 import (
 	"compress/gzip"
 	"net/http"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type gzipResponseWriter struct {
@@ -18,13 +20,14 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 func handleGzipRequest(w http.ResponseWriter, r *http.Request, handler http.Handler) {
 	gzReader, err := gzip.NewReader(r.Body)
 	if err != nil {
-		unparsebleCompressedDataFromClient()(w, r)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	defer func() {
 		err := gzReader.Close()
 		if err != nil {
-			unparsebleCompressedDataFromClient()(w, r)
+			log.Err(err).Msg("Closing gz reader")
+			w.WriteHeader(http.StatusBadRequest)
 		}
 	}()
 
@@ -34,7 +37,8 @@ func handleGzipRequest(w http.ResponseWriter, r *http.Request, handler http.Hand
 	defer func() {
 		err := gzipWriter.Close()
 		if err != nil {
-			unparsebleCompressedDataFromClient()(w, r)
+			log.Err(err).Msg("Closing gz writer")
+			w.WriteHeader(http.StatusBadRequest)
 		}
 	}()
 
@@ -49,7 +53,8 @@ func handleGzipResponse(w http.ResponseWriter, r *http.Request, handler http.Han
 	defer func() {
 		err := gw.Close()
 		if err != nil {
-			compressingDataTrouble()(w, r)
+			log.Err(err).Msg("Closing gzip writer")
+			w.WriteHeader(http.StatusBadRequest)
 		}
 	}()
 
@@ -57,7 +62,7 @@ func handleGzipResponse(w http.ResponseWriter, r *http.Request, handler http.Han
 	handler.ServeHTTP(gzipWriter, r)
 }
 
-func withGzip(handler http.Handler) http.Handler {
+func WithGzip(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		clientSendedGZip := strings.Contains(r.Header.Get("Content-Encoding"), "gzip")
 		if clientSendedGZip {

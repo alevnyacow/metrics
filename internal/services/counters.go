@@ -1,6 +1,9 @@
 package services
 
-import "github.com/alevnyacow/metrics/internal/domain"
+import (
+	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/rs/zerolog/log"
+)
 
 // CountersService provides logic of working with
 // counters metrics.
@@ -12,11 +15,13 @@ type CountersService struct {
 func (service *CountersService) Update(key domain.CounterName, value domain.CounterValue) {
 	if !service.repository.Exists(key) {
 		service.repository.Set(key, value)
+		log.Info().Str("Counter name", string(key)).Str("Counter value", value.ToString()).Msg("Created counter")
 		return
 	}
 	summedValue := value + service.repository.GetValue(key)
 	service.repository.Set(key, summedValue)
 	service.afterUpdate()
+	log.Info().Str("Counter name", string(key)).Str("Counter value", value.ToString()).Msg("Updated counter")
 }
 
 func (service *CountersService) GetByKey(key domain.CounterName) (dto domain.Metric, exists bool) {
