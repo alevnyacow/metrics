@@ -2,8 +2,10 @@
 package api
 
 import (
+	metricsMiddleware "github.com/alevnyacow/metrics/internal/middleware"
 	"github.com/alevnyacow/metrics/internal/services"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // MetricsController provides functionality of metrics
@@ -29,8 +31,13 @@ func NewController(
 // after this function is called, provided Chi mux has all
 // handlers from API Metrics Controller.
 func (controller *MetricsController) AddInChiMux(chi *chi.Mux) {
-	update, getMetric, getAllMetrics := routes()
-	chi.Post(update, controller.updateMetric)
-	chi.Get(getMetric, controller.getMetric)
-	chi.Get(getAllMetrics, controller.getAllMetrics)
+	update, updateWithJSON, getMetric, getAllMetrics, getByJSON := routes()
+	chi.Use(middleware.Compress(5, "text/html", "application/json"))
+	chi.Use(metricsMiddleware.WithLogging)
+	chi.Use(metricsMiddleware.WithGzip)
+	chi.Get(getMetric, controller.handleGetMetricValueByPathValue)
+	chi.Get(getAllMetrics, controller.handleGetAllMetrics)
+	chi.Post(update, controller.updateMetricByPathValues)
+	chi.Post(updateWithJSON, controller.handleUpdateMetricByJSON)
+	chi.Post(getByJSON, controller.handleGetMetricByJSON)
 }

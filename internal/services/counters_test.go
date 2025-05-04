@@ -4,18 +4,17 @@ import (
 	"testing"
 
 	"github.com/alevnyacow/metrics/internal/domain"
-	"github.com/alevnyacow/metrics/internal/infrastructure/memstorage"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/alevnyacow/metrics/internal/store/memstorage"
 )
 
 var counterName = domain.CounterName("test_counter")
-var counterRawValue = domain.CounterRawValue("100")
 var counterValue = domain.CounterValue(100)
 
 func TestCounterValue(t *testing.T) {
 	countersRepo := memstorage.NewCountersRepository()
-	countersService := services.NewCountersService(countersRepo)
-	countersService.SetWithRawValue(counterName, counterRawValue)
+	countersService := services.NewCountersService(countersRepo, func() {})
+	countersService.Update(counterName, counterValue)
 	counter, found := countersService.GetByKey(counterName)
 	if !found {
 		t.Error("Have not found existing counter")
@@ -23,14 +22,7 @@ func TestCounterValue(t *testing.T) {
 	if counter.Name != string(counterName) {
 		t.Errorf("Wrong name - expected %s, got %s", counterName, counter.Name)
 	}
-	if counter.Value != string(counterRawValue) {
-		t.Error("Wrong string value representation - expected %w, got %w", counterRawValue, counter.Value)
-	}
-	counterActualValue, parsed := domain.CounterRawValue(counter.Value).ToValue()
-	if !parsed {
-		t.Error("Could not parse counter value")
-	}
-	if counterActualValue != counterValue {
-		t.Errorf("Wrong parsed counter values - expected %d, got %d", counterValue, counterActualValue)
+	if counter.Value != counterValue.ToString() {
+		t.Errorf("Wrong parsed counter values - expected %d, got %s", counterValue, counter.Value)
 	}
 }

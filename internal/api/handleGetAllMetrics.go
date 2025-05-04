@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (controller *MetricsController) getAllMetrics(w http.ResponseWriter, r *http.Request) {
+func (controller *MetricsController) handleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	metrics := append(
 		controller.countersService.GetAll(),
 		controller.gaugesService.GetAll()...,

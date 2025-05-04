@@ -5,6 +5,7 @@ import (
 	"runtime"
 
 	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/rs/zerolog/log"
 )
 
 type AgentCounters struct {
@@ -45,8 +46,8 @@ type AgentGauges struct {
 // MetricsCollectionService provides logic of
 // updating and storing collected metrics.
 type MetricsCollectionService struct {
-	Counters []domain.Counter
-	Gauges   []domain.Gauge
+	counters []domain.Counter
+	gauges   []domain.Gauge
 }
 
 func (service *MetricsCollectionService) generateCounters() AgentCounters {
@@ -98,8 +99,21 @@ func (service *MetricsCollectionService) generateGauges() AgentGauges {
 func (service *MetricsCollectionService) UpdateMetrics() {
 	counters := service.generateCounters()
 	gauges := service.generateGauges()
-	service.Counters = counters.toMetrics()
-	service.Gauges = gauges.toMetrics()
+	service.counters = counters.toMetrics()
+	log.Info().Msg("Collected and updated counters")
+	service.gauges = gauges.toMetrics()
+	log.Info().Msg("Collected and updated gauges")
+}
+
+func (service *MetricsCollectionService) CollectedMetrics() []domain.Metric {
+	metrics := make([]domain.Metric, 0)
+	for _, counter := range service.counters {
+		metrics = append(metrics, counter.ToMetricModel())
+	}
+	for _, gauge := range service.gauges {
+		metrics = append(metrics, gauge.ToMetricModel())
+	}
+	return metrics
 }
 
 func (counters AgentCounters) toMetrics() []domain.Counter {

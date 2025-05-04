@@ -1,22 +1,15 @@
 package services
 
-import "github.com/alevnyacow/metrics/internal/domain"
+import (
+	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/rs/zerolog/log"
+)
 
 // CountersService provides logic of working with
 // gauge metrics.
 type GaugesService struct {
-	repository GaugesRepository
-}
-
-func (service *GaugesService) SetWithRawValue(key domain.GaugeName, rawValue domain.GaugeRawValue) (success bool) {
-	value, parsed := rawValue.ToValue()
-	if !parsed {
-		success = false
-		return
-	}
-	success = true
-	service.repository.Set(key, value)
-	return
+	repository  GaugesRepository
+	afterUpdate func()
 }
 
 func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric, exists bool) {
@@ -28,6 +21,13 @@ func (service *GaugesService) GetByKey(key domain.GaugeName) (dto domain.Metric,
 	gaugeDTO := service.repository.Get(key)
 	dto = gaugeDTO.ToMetricModel()
 	return
+}
+
+func (service *GaugesService) Set(key domain.GaugeName, value domain.GaugeValue) {
+	service.repository.Set(key, value)
+	service.afterUpdate()
+	log.Info().Str("Gauge name", string(key)).Str("Gauge value", value.ToString()).Msg("Setted gauge")
+
 }
 
 func (service *GaugesService) GetAll() (metricDTOs []domain.Metric) {

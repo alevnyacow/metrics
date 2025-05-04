@@ -5,21 +5,23 @@ package services
 
 import "github.com/alevnyacow/metrics/internal/domain"
 
-func NewCountersService(repository CountersRepository) *CountersService {
+func NewCountersService(repository CountersRepository, afterUpdate func()) *CountersService {
 	return &CountersService{
-		repository: repository,
+		repository:  repository,
+		afterUpdate: afterUpdate,
 	}
 }
 
-func NewGaugesService(repository GaugesRepository) *GaugesService {
+func NewGaugesService(repository GaugesRepository, afterUpdate func()) *GaugesService {
 	return &GaugesService{
-		repository: repository,
+		repository:  repository,
+		afterUpdate: afterUpdate,
 	}
 }
 
 func NewMetricsCollectionService() *MetricsCollectionService {
 	return &MetricsCollectionService{
-		Gauges:   make([]domain.Gauge, 0),
-		Counters: make([]domain.Counter, 0),
+		gauges:   make([]domain.Gauge, 0),
+		counters: make([]domain.Counter, 0),
 	}
 }
