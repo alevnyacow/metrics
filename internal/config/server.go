@@ -8,17 +8,19 @@ import (
 )
 
 type ServerConfigs struct {
-	APIHost         string `env:"ADDRESS"`
-	StoreInterval   uint   `env:"STORE_INTERVAL"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	Restore         bool   `env:"RESTORE"`
+	APIHost                  string `env:"ADDRESS"`
+	StoreInterval            uint   `env:"STORE_INTERVAL"`
+	FileStoragePath          string `env:"FILE_STORAGE_PATH"`
+	Restore                  bool   `env:"RESTORE"`
+	DatabaseConnectionString string `env:"DATABASE_DSN"`
 }
 
 var defaultServerConfigs = ServerConfigs{
-	APIHost:         "localhost:8080",
-	StoreInterval:   0,
-	FileStoragePath: "metrics.json",
-	Restore:         true,
+	APIHost:                  "localhost:8080",
+	StoreInterval:            0,
+	FileStoragePath:          "metrics.json",
+	Restore:                  true,
+	DatabaseConnectionString: "",
 }
 
 // parseServerEnvData returns parsed server configuration data
@@ -41,14 +43,16 @@ func parseServerArgsConfigs() ServerConfigs {
 	storeIntervalPointer := flag.Uint("i", defaultServerConfigs.StoreInterval, "File storage interval")
 	fileStoragePathPointer := flag.String("f", defaultServerConfigs.FileStoragePath, "File storage path")
 	restorePointer := flag.Bool("r", defaultServerConfigs.Restore, "Flag to restore data from file")
+	dbConnectionStringPointer := flag.String("d", defaultServerConfigs.DatabaseConnectionString, "Database connection string")
 
 	flag.Parse()
 
 	return ServerConfigs{
-		APIHost:         *apiHostPointer,
-		StoreInterval:   *storeIntervalPointer,
-		FileStoragePath: *fileStoragePathPointer,
-		Restore:         *restorePointer,
+		APIHost:                  *apiHostPointer,
+		StoreInterval:            *storeIntervalPointer,
+		FileStoragePath:          *fileStoragePathPointer,
+		Restore:                  *restorePointer,
+		DatabaseConnectionString: *dbConnectionStringPointer,
 	}
 }
 
@@ -62,9 +66,10 @@ func mergeServerConfigs(envConfigs ServerConfigs, argsConfigs ServerConfigs) Ser
 		return envConfigs.Restore
 	}
 	return ServerConfigs{
-		APIHost:         selectExistingString(envConfigs.APIHost, argsConfigs.APIHost),
-		StoreInterval:   selectExistingUInt(envConfigs.StoreInterval, argsConfigs.StoreInterval),
-		FileStoragePath: selectExistingString(envConfigs.FileStoragePath, argsConfigs.FileStoragePath),
-		Restore:         restore(),
+		APIHost:                  selectExistingString(envConfigs.APIHost, argsConfigs.APIHost),
+		StoreInterval:            selectExistingUInt(envConfigs.StoreInterval, argsConfigs.StoreInterval),
+		FileStoragePath:          selectExistingString(envConfigs.FileStoragePath, argsConfigs.FileStoragePath),
+		DatabaseConnectionString: selectExistingString(envConfigs.DatabaseConnectionString, argsConfigs.DatabaseConnectionString),
+		Restore:                  restore(),
 	}
 }

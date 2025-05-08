@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
 	"sync"
 	"time"
@@ -12,12 +13,15 @@ import (
 	"github.com/alevnyacow/metrics/internal/store/filestorage"
 	"github.com/alevnyacow/metrics/internal/store/memstorage"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
 var countersService *services.CountersService
 var gaugesService *services.GaugesService
+var healthcheckService *services.HealthcheckService
 var configs = config.ParseServerConfigs()
+var db *sql.DB
 
 func init() {
 	wg := sync.WaitGroup{}
@@ -74,14 +78,24 @@ func init() {
 		}
 	}
 
+	database, err := sql.Open("postgres", configs.DatabaseConnectionString)
+	if err != nil {
+		panic(err)
+	}
+
+	db = database
 	countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
 	gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
-
+	healthcheckService = services.NewHealtheckService(db)
 }
 
 func main() {
+	defer func() {
+		db.Close()
+	}()
+
 	chiRouter := chi.NewRouter()
-	apiController := api.NewController(countersService, gaugesService)
+	apiController := api.NewController(countersService, gaugesService, healthcheckService)
 	apiController.AddInChiMux(chiRouter)
 	server := &http.Server{
 		Addr:    configs.APIHost,
