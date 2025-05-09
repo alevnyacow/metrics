@@ -22,6 +22,7 @@ import (
 var countersService *services.CountersService
 var gaugesService *services.GaugesService
 var healthcheckService *services.HealthcheckService
+var commonMetricsService services.CommonMetricsService
 var configs = config.ParseServerConfigs()
 var db *sql.DB
 var ctx = context.Background()
@@ -84,6 +85,7 @@ func init() {
 
 		countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
 		gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
+		commonMetricsService = services.NewInMemoryCommonMetricsService(countersService, gaugesService)
 		healthcheckService = services.NewHealtheckService(nil)
 		return
 	}
@@ -108,6 +110,7 @@ func init() {
 		afterUpdate,
 	)
 	healthcheckService = services.NewHealtheckService(db)
+	commonMetricsService = services.NewDbCommonMetricsService(db, dbCountersRepo)
 }
 
 func main() {
@@ -118,7 +121,7 @@ func main() {
 	}()
 
 	chiRouter := chi.NewRouter()
-	apiController := api.NewController(countersService, gaugesService, healthcheckService)
+	apiController := api.NewController(countersService, gaugesService, healthcheckService, commonMetricsService)
 	apiController.AddInChiMux(chiRouter)
 	server := &http.Server{
 		Addr:    configs.APIHost,

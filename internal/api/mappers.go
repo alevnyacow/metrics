@@ -1,6 +1,11 @@
 package api
 
-import "github.com/alevnyacow/metrics/internal/domain"
+import (
+	"errors"
+
+	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/rs/zerolog/log"
+)
 
 func mTypeFromMetricType(metric domain.Metric) string {
 	if metric.IsCounter() {
@@ -40,5 +45,39 @@ func MapDomainMetricToMetricDTO(domainMetric domain.Metric) Metric {
 		MType: mTypeFromMetricType(domainMetric),
 		Delta: deltaFromDomainMetric(domainMetric),
 		Value: valueFromDomainMetric(domainMetric),
+	}
+}
+
+func (metric Metric) toDomain() domain.Metric {
+	getType := func() domain.MetricType {
+		if metric.MType == "gauge" {
+			return domain.CounterMetricType
+		}
+		return domain.GaugeMetricType
+	}
+	getValue := func() string {
+		if metric.Delta != nil {
+			value, success := domain.CounterRawIntValue(*metric.Delta).ToValue()
+			if !success {
+				log.Err(errors.New("could not parse value")).Msg("Error on parsing delta")
+				return ""
+			}
+			return value.ToString()
+		}
+		if metric.Value != nil {
+			value, success := domain.GaugeRawFloatValue(*metric.Value).ToValue()
+			if !success {
+				log.Err(errors.New("could not parse value")).Msg("Error on parsing value")
+				return ""
+			}
+			return value.ToString()
+		}
+		return ""
+	}
+
+	return domain.Metric{
+		Name:  metric.ID,
+		Value: getValue(),
+		Type:  getType(),
 	}
 }

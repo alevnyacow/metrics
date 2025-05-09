@@ -35,3 +35,17 @@ func NewHealtheckService(db *sql.DB) *HealthcheckService {
 		db: db,
 	}
 }
+
+func NewInMemoryCommonMetricsService(countersService *CountersService, gaugesService *GaugesService) *InMemoryCommonMetricsService {
+	return &InMemoryCommonMetricsService{
+		countersService: countersService,
+		gaugesService:   gaugesService,
+	}
+}
+
+func NewDbCommonMetricsService(db *sql.DB, countersRepository CountersRepository) *DbCommonMetricsService {
+	return &DbCommonMetricsService{
+		db:                 db,
+		countersRepository: countersRepository,
+	}
+}

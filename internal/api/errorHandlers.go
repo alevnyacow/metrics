@@ -69,3 +69,10 @@ func failedDatabasePingResponse(err error) http.HandlerFunc {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
+
+func failedUpdatesResponse(err error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(err).Msg("Error on update with batch")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
