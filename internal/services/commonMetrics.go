@@ -79,7 +79,7 @@ func (service *DbCommonMetricsService) UpdateMetrics(ctx context.Context, data [
 			}
 			exists := service.countersRepository.Exists(ctx, domain.CounterName(data.Name))
 			if !exists {
-				_, updateError := transaction.ExecContext(ctx, "INSERT INTO counters (name, value) VALUES ($1, $2)",
+				_, updateError := transaction.ExecContext(ctx, "INSERT INTO counters (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET value = $2",
 					data.Name,
 					value,
 				)
@@ -90,9 +90,8 @@ func (service *DbCommonMetricsService) UpdateMetrics(ctx context.Context, data [
 				}
 				return
 			}
-			currentValue := service.countersRepository.GetValue(ctx, domain.CounterName(data.Name))
-			newValue := value + currentValue
-			_, updateError := transaction.ExecContext(ctx, "UPDATE counters SET value = $2 WHERE name = $1", data.Name, newValue)
+
+			_, updateError := transaction.ExecContext(ctx, "UPDATE counters SET value = value + $2 WHERE name = $1", data.Name, value)
 			if updateError != nil {
 				err = updateError
 				log.Err(err).Msg("Error on updating counter")
