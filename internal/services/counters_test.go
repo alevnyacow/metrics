@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/alevnyacow/metrics/internal/domain"
@@ -10,12 +11,13 @@ import (
 
 var counterName = domain.CounterName("test_counter")
 var counterValue = domain.CounterValue(100)
+var ctx = context.Background()
 
 func TestCounterValue(t *testing.T) {
 	countersRepo := memstorage.NewCountersRepository()
 	countersService := services.NewCountersService(countersRepo, func() {})
-	countersService.Update(counterName, counterValue)
-	counter, found := countersService.GetByKey(counterName)
+	countersService.Update(ctx, counterName, counterValue)
+	counter, found := countersService.GetByKey(ctx, counterName)
 	if !found {
 		t.Error("Have not found existing counter")
 	}
