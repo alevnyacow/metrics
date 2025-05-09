@@ -112,7 +112,7 @@ func init() {
 		afterUpdate,
 	)
 	healthcheckService = services.NewHealtheckService(db)
-	commonMetricsService = services.NewDbCommonMetricsService(db, dbCountersRepo)
+	commonMetricsService = services.NewDBCommonMetricsService(db, dbCountersRepo)
 }
 
 func main() {

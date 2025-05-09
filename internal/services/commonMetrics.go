@@ -18,7 +18,7 @@ type InMemoryCommonMetricsService struct {
 	gaugesService   *GaugesService
 }
 
-type DbCommonMetricsService struct {
+type DBCommonMetricsService struct {
 	db                 *sql.DB
 	countersRepository CountersRepository
 }
@@ -45,7 +45,7 @@ func (service *InMemoryCommonMetricsService) UpdateMetrics(ctx context.Context, 
 	return
 }
 
-func (service *DbCommonMetricsService) UpdateMetrics(ctx context.Context, data []domain.Metric) (err error) {
+func (service *DBCommonMetricsService) UpdateMetrics(ctx context.Context, data []domain.Metric) (err error) {
 	transaction, transactionError := service.db.BeginTx(ctx, nil)
 	defer transaction.Commit()
 

@@ -43,8 +43,8 @@ func NewInMemoryCommonMetricsService(countersService *CountersService, gaugesSer
 	}
 }
 
-func NewDbCommonMetricsService(db *sql.DB, countersRepository CountersRepository) *DbCommonMetricsService {
-	return &DbCommonMetricsService{
+func NewDBCommonMetricsService(db *sql.DB, countersRepository CountersRepository) *DBCommonMetricsService {
+	return &DBCommonMetricsService{
 		db:                 db,
 		countersRepository: countersRepository,
 	}
