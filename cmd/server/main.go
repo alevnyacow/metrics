@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"sync"
@@ -10,6 +11,7 @@ import (
 	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/domain"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/alevnyacow/metrics/internal/store/dbstorage"
 	"github.com/alevnyacow/metrics/internal/store/filestorage"
 	"github.com/alevnyacow/metrics/internal/store/memstorage"
 	"github.com/go-chi/chi/v5"
@@ -22,76 +24,97 @@ var gaugesService *services.GaugesService
 var healthcheckService *services.HealthcheckService
 var configs = config.ParseServerConfigs()
 var db *sql.DB
+var ctx = context.Background()
 
 func init() {
 	wg := sync.WaitGroup{}
 	afterUpdate := func() {}
-	fileStorage := filestorage.New(configs.FileStoragePath)
-	inMemoryCountersRepository := memstorage.NewCountersRepository()
-	inMemoryGaugesRepository := memstorage.NewGaugesRepository()
+	if configs.DatabaseConnectionString == "" {
+		fileStorage := filestorage.New(configs.FileStoragePath)
+		inMemoryCountersRepository := memstorage.NewCountersRepository()
+		inMemoryGaugesRepository := memstorage.NewGaugesRepository()
 
-	saveAllMetricsToFile := func() {
-		allMetrics := make([]domain.Metric, 0)
-		for _, counter := range inMemoryCountersRepository.GetAll() {
-			allMetrics = append(allMetrics, counter.ToMetricModel())
+		saveAllMetricsToFile := func() {
+			allMetrics := make([]domain.Metric, 0)
+			for _, counter := range inMemoryCountersRepository.GetAll(ctx) {
+				allMetrics = append(allMetrics, counter.ToMetricModel())
+			}
+			for _, gauge := range inMemoryGaugesRepository.GetAll(ctx) {
+				allMetrics = append(allMetrics, gauge.ToMetricModel())
+			}
+			fileStorage.Save(allMetrics)
 		}
-		for _, gauge := range inMemoryGaugesRepository.GetAll() {
-			allMetrics = append(allMetrics, gauge.ToMetricModel())
-		}
-		fileStorage.Save(allMetrics)
-	}
 
-	if configs.Restore {
-		data, err := fileStorage.Load()
-		if err == nil {
-			for _, metric := range data {
-				if metric.IsCounter() {
-					value, parsed := domain.CounterRawValue(metric.Value).ToValue()
-					if parsed && metric.Name != "" {
-						inMemoryCountersRepository.Set(domain.CounterName(metric.Name), value)
+		if configs.Restore {
+			data, err := fileStorage.Load()
+			if err == nil {
+				for _, metric := range data {
+					if metric.IsCounter() {
+						value, parsed := domain.CounterRawValue(metric.Value).ToValue()
+						if parsed && metric.Name != "" {
+							inMemoryCountersRepository.Set(ctx, domain.CounterName(metric.Name), value)
+						}
 					}
-				}
-				if metric.IsGauge() {
-					value, parsed := domain.GaugeRawValue(metric.Value).ToValue()
-					if parsed && metric.Name != "" {
-						inMemoryGaugesRepository.Set(domain.GaugeName(metric.Name), value)
+					if metric.IsGauge() {
+						value, parsed := domain.GaugeRawValue(metric.Value).ToValue()
+						if parsed && metric.Name != "" {
+							inMemoryGaugesRepository.Set(ctx, domain.GaugeName(metric.Name), value)
+						}
 					}
 				}
 			}
-		}
 
-		if configs.StoreInterval == 0 {
-			afterUpdate = saveAllMetricsToFile
-		}
+			if configs.StoreInterval == 0 {
+				afterUpdate = saveAllMetricsToFile
+			}
 
-		if configs.StoreInterval > 0 {
-			wg.Add(1)
-			go func() {
-				defer func() {
-					wg.Done()
+			if configs.StoreInterval > 0 {
+				wg.Add(1)
+				go func() {
+					defer func() {
+						wg.Done()
+					}()
+					for {
+						time.Sleep(time.Duration(configs.StoreInterval) * time.Second)
+						saveAllMetricsToFile()
+					}
 				}()
-				for {
-					time.Sleep(time.Duration(configs.StoreInterval) * time.Second)
-					saveAllMetricsToFile()
-				}
-			}()
+			}
 		}
+
+		countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
+		gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
+		healthcheckService = services.NewHealtheckService(nil)
+		return
 	}
 
 	database, err := sql.Open("postgres", configs.DatabaseConnectionString)
 	if err != nil {
 		panic(err)
 	}
-
 	db = database
-	countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
-	gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
+
+	dbCountersRepo := dbstorage.NewCountersRepository(db)
+	dbCountersRepo.PrepareDB(ctx)
+	dbGaugesRepo := dbstorage.NewGaugesRepository(db)
+	dbGaugesRepo.PrepareDB(ctx)
+
+	countersService = services.NewCountersService(
+		dbCountersRepo,
+		afterUpdate,
+	)
+	gaugesService = services.NewGaugesService(
+		dbGaugesRepo,
+		afterUpdate,
+	)
 	healthcheckService = services.NewHealtheckService(db)
 }
 
 func main() {
 	defer func() {
-		db.Close()
+		if db != nil {
+			db.Close()
+		}
 	}()
 
 	chiRouter := chi.NewRouter()
