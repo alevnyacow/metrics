@@ -15,7 +15,7 @@ type CountersRepository struct {
 }
 
 func (repository *CountersRepository) PrepareDB(ctx context.Context) {
-	_, err := repository.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS counters (name TEXT UNIQUE, value INTEGER)`)
+	_, err := repository.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS counters (name TEXT UNIQUE, value BIGINT)`)
 	if err != nil {
 		log.Err(err).Msg("Error on preparing relational database for counters repository")
 	}
