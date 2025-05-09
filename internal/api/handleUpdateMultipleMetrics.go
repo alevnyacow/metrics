@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/alevnyacow/metrics/internal/retries"
 )
 
 func (controller *MetricsController) handleUpdateMultipleMetrics(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +23,7 @@ func (controller *MetricsController) handleUpdateMultipleMetrics(w http.Response
 		metrics = append(metrics, item.toDomain())
 	}
 
-	error := controller.commonMetricsService.UpdateMetrics(r.Context(), metrics)
+	error := retries.WithRetries(func() error { return controller.commonMetricsService.UpdateMetrics(r.Context(), metrics) })
 	if error != nil {
 		failedUpdatesResponse(error)(w, r)
 		return

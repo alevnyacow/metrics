@@ -10,6 +10,7 @@ import (
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/domain"
+	"github.com/alevnyacow/metrics/internal/retries"
 	"github.com/alevnyacow/metrics/internal/services"
 	"github.com/alevnyacow/metrics/internal/store/dbstorage"
 	"github.com/alevnyacow/metrics/internal/store/filestorage"
@@ -45,7 +46,7 @@ func init() {
 			for _, gauge := range inMemoryGaugesRepository.GetAll(ctx) {
 				allMetrics = append(allMetrics, gauge.ToMetricModel())
 			}
-			fileStorage.Save(allMetrics)
+			retries.WithRetries(func() error { return fileStorage.Save(allMetrics) })
 		}
 
 		if configs.Restore {
@@ -92,16 +93,19 @@ func init() {
 		return
 	}
 
-	database, err := sql.Open("postgres", configs.DatabaseConnectionString)
+	err := retries.WithRetries(func() error {
+		database, err := sql.Open("postgres", configs.DatabaseConnectionString)
+		db = database
+		return err
+	})
 	if err != nil {
 		panic(err)
 	}
-	db = database
 
 	dbCountersRepo := dbstorage.NewCountersRepository(db)
-	dbCountersRepo.PrepareDB(ctx)
+	retries.WithRetries(func() error { return dbCountersRepo.PrepareDB(ctx) })
 	dbGaugesRepo := dbstorage.NewGaugesRepository(db)
-	dbGaugesRepo.PrepareDB(ctx)
+	retries.WithRetries(func() error { return dbGaugesRepo.PrepareDB(ctx) })
 
 	countersService = services.NewCountersService(
 		dbCountersRepo,

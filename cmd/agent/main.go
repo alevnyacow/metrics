@@ -10,6 +10,7 @@ import (
 
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
+	"github.com/alevnyacow/metrics/internal/retries"
 	"github.com/alevnyacow/metrics/internal/services"
 	"github.com/go-resty/resty/v2"
 	"github.com/rs/zerolog/log"
@@ -54,7 +55,7 @@ func main() {
 			log.Err(marshalingError).Msg("Error while marshaling metrics DTO")
 			return
 		}
-		requestErr := sendPostWithGZippedBody(updateURL, metricJSONData)
+		requestErr := retries.WithRetries(func() error { return sendPostWithGZippedBody(updateURL, metricJSONData) })
 		if requestErr != nil {
 			log.Err(requestErr).Msg("Could not send metric update request")
 		}
