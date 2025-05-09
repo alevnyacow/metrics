@@ -19,7 +19,7 @@ type MetricsController struct {
 	gaugesService        *services.GaugesService
 	healthcheckService   *services.HealthcheckService
 	commonMetricsService services.CommonMetricsService
-	mutex                *sync.RWMutex
+	mutex                *sync.Mutex
 }
 
 func NewController(
@@ -27,7 +27,7 @@ func NewController(
 	gaugesService *services.GaugesService,
 	healthcheckService *services.HealthcheckService,
 	commonMetricsService services.CommonMetricsService,
-	mutex *sync.RWMutex,
+	mutex *sync.Mutex,
 ) *MetricsController {
 	return &MetricsController{
 		countersService:      countersService,

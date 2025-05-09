@@ -26,7 +26,7 @@ var commonMetricsService services.CommonMetricsService
 var configs = config.ParseServerConfigs()
 var db *sql.DB
 var ctx = context.Background()
-var mutex = &sync.RWMutex{}
+var mutex = &sync.Mutex{}
 
 func init() {
 	wg := sync.WaitGroup{}
