@@ -46,7 +46,7 @@ func (service *InMemoryCommonMetricsService) UpdateMetrics(ctx context.Context, 
 }
 
 func (service *DbCommonMetricsService) UpdateMetrics(ctx context.Context, data []domain.Metric) (err error) {
-	transaction, transactionError := service.db.Begin()
+	transaction, transactionError := service.db.BeginTx(ctx, nil)
 	defer transaction.Commit()
 
 	if transactionError != nil {
@@ -77,24 +77,13 @@ func (service *DbCommonMetricsService) UpdateMetrics(ctx context.Context, data [
 				err = errors.New("could not parse counter value")
 				return
 			}
-			exists := service.countersRepository.Exists(ctx, domain.CounterName(data.Name))
-			if !exists {
-				_, updateError := transaction.ExecContext(ctx, "INSERT INTO counters (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET value = $2",
-					data.Name,
-					value,
-				)
-				if updateError != nil {
-					err = updateError
-					log.Err(err).Msg("Error on creating counter")
-					return
-				}
-				return
-			}
-
-			_, updateError := transaction.ExecContext(ctx, "UPDATE counters SET value = value + $2 WHERE name = $1", data.Name, value)
+			_, updateError := transaction.ExecContext(ctx, "INSERT INTO counters (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET value = value + $2",
+				data.Name,
+				value,
+			)
 			if updateError != nil {
 				err = updateError
-				log.Err(err).Msg("Error on updating counter")
+				log.Err(err).Msg("Error on creating counter")
 				return
 			}
 		}
