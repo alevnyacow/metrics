@@ -77,7 +77,7 @@ func (service *DbCommonMetricsService) UpdateMetrics(ctx context.Context, data [
 				err = errors.New("could not parse counter value")
 				return
 			}
-			_, updateError := transaction.ExecContext(ctx, "INSERT INTO counters (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET value = value + $2",
+			_, updateError := transaction.ExecContext(ctx, "INSERT INTO counters (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET value = counters.value + $2",
 				data.Name,
 				value,
 			)
