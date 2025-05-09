@@ -9,7 +9,11 @@ import (
 
 func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWriter, r *http.Request) {
 	controller.mutex.Lock()
-	defer controller.mutex.Unlock()
+	controller.mutex.RLock()
+	defer func() {
+		controller.mutex.Unlock()
+		controller.mutex.RUnlock()
+	}()
 
 	decoder := json.NewDecoder(r.Body)
 	payload := Metric{}
