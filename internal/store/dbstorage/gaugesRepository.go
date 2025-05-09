@@ -56,7 +56,11 @@ func (repository *GaugesRepository) GetAll(ctx context.Context) []domain.Gauge {
 	gauges := make([]domain.Gauge, 0)
 	rows, err := repository.db.QueryContext(ctx, "SELECT name, value FROM gauges")
 	if err != nil {
-		log.Err(err).Msg("Error on obtaining metrics data from relational database")
+		log.Err(err).Msg("Error on obtaining gauges from relational database")
+		return gauges
+	}
+	if rows.Err() != nil {
+		log.Err(rows.Err()).Msg("Error on obtaining gauges from relational database")
 		return gauges
 	}
 	defer rows.Close()

@@ -56,7 +56,11 @@ func (repository *CountersRepository) GetAll(ctx context.Context) []domain.Count
 	counters := make([]domain.Counter, 0)
 	rows, err := repository.db.QueryContext(ctx, "SELECT name, value FROM counters")
 	if err != nil {
-		log.Err(err).Msg("Error on obtaining metrics data from relational database")
+		log.Err(err).Msg("Error on obtaining counters from relational database")
+		return counters
+	}
+	if rows.Err() != nil {
+		log.Err(rows.Err()).Msg("Error on obtaining counters from relational database")
 		return counters
 	}
 	defer rows.Close()
