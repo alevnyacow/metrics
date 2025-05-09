@@ -2,6 +2,8 @@
 package api
 
 import (
+	"sync"
+
 	metricsMiddleware "github.com/alevnyacow/metrics/internal/middleware"
 	"github.com/alevnyacow/metrics/internal/services"
 	"github.com/go-chi/chi/v5"
@@ -17,6 +19,7 @@ type MetricsController struct {
 	gaugesService        *services.GaugesService
 	healthcheckService   *services.HealthcheckService
 	commonMetricsService services.CommonMetricsService
+	mutex                *sync.RWMutex
 }
 
 func NewController(
@@ -24,12 +27,14 @@ func NewController(
 	gaugesService *services.GaugesService,
 	healthcheckService *services.HealthcheckService,
 	commonMetricsService services.CommonMetricsService,
+	mutex *sync.RWMutex,
 ) *MetricsController {
 	return &MetricsController{
 		countersService:      countersService,
 		gaugesService:        gaugesService,
 		healthcheckService:   healthcheckService,
 		commonMetricsService: commonMetricsService,
+		mutex:                mutex,
 	}
 }
 

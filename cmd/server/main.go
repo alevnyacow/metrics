@@ -26,9 +26,11 @@ var commonMetricsService services.CommonMetricsService
 var configs = config.ParseServerConfigs()
 var db *sql.DB
 var ctx = context.Background()
+var mutex = &sync.RWMutex{}
 
 func init() {
 	wg := sync.WaitGroup{}
+
 	afterUpdate := func() {}
 	if configs.DatabaseConnectionString == "" {
 		fileStorage := filestorage.New(configs.FileStoragePath)
@@ -121,7 +123,7 @@ func main() {
 	}()
 
 	chiRouter := chi.NewRouter()
-	apiController := api.NewController(countersService, gaugesService, healthcheckService, commonMetricsService)
+	apiController := api.NewController(countersService, gaugesService, healthcheckService, commonMetricsService, mutex)
 	apiController.AddInChiMux(chiRouter)
 	server := &http.Server{
 		Addr:    configs.APIHost,

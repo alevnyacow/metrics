@@ -7,6 +7,9 @@ import (
 )
 
 func (controller *MetricsController) updateMetricByPathValues(w http.ResponseWriter, r *http.Request) {
+	controller.mutex.Lock()
+	defer controller.mutex.Unlock()
+
 	metricType, rawValue, metricTypeParsingSuccess := parseMetricType(r)
 	if !metricTypeParsingSuccess {
 		unknownMetricTypeResponse(rawValue)(w, r)

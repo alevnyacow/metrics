@@ -6,6 +6,9 @@ import (
 )
 
 func (controller *MetricsController) handleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
+	controller.mutex.RLock()
+	defer controller.mutex.RUnlock()
+
 	metrics := append(
 		controller.countersService.GetAll(r.Context()),
 		controller.gaugesService.GetAll(r.Context())...,
