@@ -59,3 +59,20 @@ func providedIncorrectUpdateValueResponse(notParsedValue string) http.HandlerFun
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
+
+// failedDatabasePingResponse returns handler function
+// for case where client tried to ping database and it
+// was not successful
+func failedDatabasePingResponse(err error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(err).Msg("Error on database ping")
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func failedUpdatesResponse(err error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(err).Msg("Error on update with batch")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}

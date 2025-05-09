@@ -7,6 +7,9 @@ import (
 )
 
 func (controller *MetricsController) updateMetricByPathValues(w http.ResponseWriter, r *http.Request) {
+	controller.mutex.Lock()
+	defer controller.mutex.Unlock()
+
 	metricType, rawValue, metricTypeParsingSuccess := parseMetricType(r)
 	if !metricTypeParsingSuccess {
 		unknownMetricTypeResponse(rawValue)(w, r)
@@ -28,13 +31,13 @@ func (controller *MetricsController) updateMetricByPathValues(w http.ResponseWri
 		if !parsed {
 			providedIncorrectUpdateValueResponse(stringValue)(w, r)
 		}
-		controller.countersService.Update(domain.CounterName(metricName), value)
+		controller.countersService.Update(r.Context(), domain.CounterName(metricName), value)
 	case domain.GaugeMetricType:
 		value, parsed := domain.GaugeRawValue(stringValue).ToValue()
 		if !parsed {
 			providedIncorrectUpdateValueResponse(stringValue)(w, r)
 		}
-		controller.gaugesService.Set(domain.GaugeName(metricName), value)
+		controller.gaugesService.Set(r.Context(), domain.GaugeName(metricName), value)
 	default:
 		unknownMetricTypeResponse(rawValue)(w, r)
 	}

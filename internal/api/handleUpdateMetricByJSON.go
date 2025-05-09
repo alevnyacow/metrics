@@ -8,6 +8,11 @@ import (
 )
 
 func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWriter, r *http.Request) {
+	controller.mutex.Lock()
+	defer func() {
+		controller.mutex.Unlock()
+	}()
+
 	decoder := json.NewDecoder(r.Body)
 	payload := Metric{}
 	err := decoder.Decode(&payload)
@@ -23,9 +28,9 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 	case "gauge":
 		value, parsed := domain.GaugeRawFloatValue(*payload.Value).ToValue()
 		if parsed {
-			controller.gaugesService.Set(domain.GaugeName(payload.ID), value)
+			controller.gaugesService.Set(r.Context(), domain.GaugeName(payload.ID), value)
 		}
-		updatedGauge, exists := controller.gaugesService.GetByKey(domain.GaugeName(payload.ID))
+		updatedGauge, exists := controller.gaugesService.GetByKey(r.Context(), domain.GaugeName(payload.ID))
 		if !exists {
 			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return
@@ -42,9 +47,9 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 	case "counter":
 		value, parsed := domain.CounterRawIntValue(*payload.Delta).ToValue()
 		if parsed {
-			controller.countersService.Update(domain.CounterName(payload.ID), value)
+			controller.countersService.Update(r.Context(), domain.CounterName(payload.ID), value)
 		}
-		updatedCounter, exists := controller.countersService.GetByKey(domain.CounterName(payload.ID))
+		updatedCounter, exists := controller.countersService.GetByKey(r.Context(), domain.CounterName(payload.ID))
 		if !exists {
 			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return

@@ -6,9 +6,12 @@ import (
 )
 
 func (controller *MetricsController) handleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
+	controller.mutex.Lock()
+	defer controller.mutex.Unlock()
+
 	metrics := append(
-		controller.countersService.GetAll(),
-		controller.gaugesService.GetAll()...,
+		controller.countersService.GetAll(r.Context()),
+		controller.gaugesService.GetAll(r.Context())...,
 	)
 	allMetricsJSON, marshalingError := json.Marshal(metrics)
 	if marshalingError != nil {
