@@ -75,9 +75,7 @@ func init() {
 			if configs.StoreInterval > 0 {
 				wg.Add(1)
 				go func() {
-					defer func() {
-						wg.Done()
-					}()
+					defer wg.Done()
 					for {
 						time.Sleep(time.Duration(configs.StoreInterval) * time.Second)
 						saveAllMetricsToFile()
@@ -122,7 +120,10 @@ func init() {
 func main() {
 	defer func() {
 		if db != nil {
-			db.Close()
+			err := db.Close()
+			if err != nil {
+				log.Err(err).Msg("Error on closing database")
+			}
 		}
 	}()
 

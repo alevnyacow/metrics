@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/alevnyacow/metrics/internal/domain"
 	"github.com/rs/zerolog/log"
@@ -60,7 +59,6 @@ func (metric Metric) toDomain() domain.Metric {
 		if metric.Delta != nil {
 			value, success := domain.CounterRawIntValue(*metric.Delta).ToValue()
 			if !success {
-				fmt.Print(metric)
 				log.Err(errors.New("could not parse value")).Msg("Error on parsing delta")
 				return ""
 			}
@@ -70,7 +68,6 @@ func (metric Metric) toDomain() domain.Metric {
 
 			value, success := domain.GaugeRawFloatValue(*metric.Value).ToValue()
 			if !success {
-				fmt.Print(metric)
 				log.Err(errors.New("could not parse value")).Msg("Error on parsing value")
 				return ""
 			}
