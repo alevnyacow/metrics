@@ -28,69 +28,76 @@ var configs = config.ParseServerConfigs()
 var db *sql.DB
 var ctx = context.Background()
 var mutex = &sync.Mutex{}
+var wg = sync.WaitGroup{}
+var afterUpdate = func() {}
 
-func init() {
-	wg := sync.WaitGroup{}
+func saveAllMetricsToFile(
+	fileStorage *filestorage.FileStorage,
+	inMemoryCountersRepository *memstorage.CountersRepository,
+	inMemoryGaugesRepository *memstorage.GaugesRepository,
+) {
+	counters := inMemoryCountersRepository.GetAll(ctx)
+	gauges := inMemoryGaugesRepository.GetAll(ctx)
+	counterGaugesLen := len(counters) + len(gauges)
+	allMetrics := make([]domain.Metric, counterGaugesLen)
 
-	afterUpdate := func() {}
-	if configs.DatabaseConnectionString == "" {
-		fileStorage := filestorage.New(configs.FileStoragePath)
-		inMemoryCountersRepository := memstorage.NewCountersRepository()
-		inMemoryGaugesRepository := memstorage.NewGaugesRepository()
+	for i, counter := range counters {
+		allMetrics[i] = counter.ToMetricModel()
+	}
+	for i, gauge := range gauges {
+		allMetrics[len(counters)+i] = gauge.ToMetricModel()
+	}
+	retries.WithRetries(func() error { return fileStorage.Save(allMetrics) })
+}
 
-		saveAllMetricsToFile := func() {
-			allMetrics := make([]domain.Metric, 0)
-			for _, counter := range inMemoryCountersRepository.GetAll(ctx) {
-				allMetrics = append(allMetrics, counter.ToMetricModel())
-			}
-			for _, gauge := range inMemoryGaugesRepository.GetAll(ctx) {
-				allMetrics = append(allMetrics, gauge.ToMetricModel())
-			}
-			retries.WithRetries(func() error { return fileStorage.Save(allMetrics) })
-		}
+func prepareApplicationWithMemStorage() {
+	fileStorage := filestorage.New(configs.FileStoragePath)
+	inMemoryCountersRepository := memstorage.NewCountersRepository()
+	inMemoryGaugesRepository := memstorage.NewGaugesRepository()
 
-		if configs.Restore {
-			data, err := fileStorage.Load()
-			if err == nil {
-				for _, metric := range data {
-					if metric.IsCounter() {
-						value, parsed := domain.CounterRawValue(metric.Value).ToValue()
-						if parsed && metric.Name != "" {
-							inMemoryCountersRepository.Set(ctx, domain.CounterName(metric.Name), value)
-						}
+	if configs.Restore {
+		data, err := fileStorage.Load()
+		if err == nil {
+			for _, metric := range data {
+				if metric.IsCounter() {
+					value, parsed := domain.CounterRawValue(metric.Value).ToValue()
+					if parsed && metric.Name != "" {
+						inMemoryCountersRepository.Set(ctx, domain.CounterName(metric.Name), value)
 					}
-					if metric.IsGauge() {
-						value, parsed := domain.GaugeRawValue(metric.Value).ToValue()
-						if parsed && metric.Name != "" {
-							inMemoryGaugesRepository.Set(ctx, domain.GaugeName(metric.Name), value)
-						}
+				}
+				if metric.IsGauge() {
+					value, parsed := domain.GaugeRawValue(metric.Value).ToValue()
+					if parsed && metric.Name != "" {
+						inMemoryGaugesRepository.Set(ctx, domain.GaugeName(metric.Name), value)
 					}
 				}
 			}
-
-			if configs.StoreInterval == 0 {
-				afterUpdate = saveAllMetricsToFile
-			}
-
-			if configs.StoreInterval > 0 {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					for {
-						time.Sleep(time.Duration(configs.StoreInterval) * time.Second)
-						saveAllMetricsToFile()
-					}
-				}()
-			}
 		}
 
-		countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
-		gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
-		commonMetricsService = services.NewInMemoryCommonMetricsService(countersService, gaugesService)
-		healthcheckService = services.NewHealtheckService(nil)
-		return
+		if configs.StoreInterval == 0 {
+			afterUpdate = func() { saveAllMetricsToFile(fileStorage, inMemoryCountersRepository, inMemoryGaugesRepository) }
+		}
+
+		if configs.StoreInterval > 0 {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for {
+					time.Sleep(time.Duration(configs.StoreInterval) * time.Second)
+					saveAllMetricsToFile(fileStorage, inMemoryCountersRepository, inMemoryGaugesRepository)
+				}
+			}()
+		}
 	}
 
+	countersService = services.NewCountersService(inMemoryCountersRepository, afterUpdate)
+	gaugesService = services.NewGaugesService(inMemoryGaugesRepository, afterUpdate)
+	commonMetricsService = services.NewInMemoryCommonMetricsService(countersService, gaugesService)
+	healthcheckService = services.NewHealtheckService(nil)
+
+}
+
+func prepareApplicationWithDb() {
 	err := retries.WithRetries(func() error {
 		database, err := sql.Open("postgres", configs.DatabaseConnectionString)
 		db = database
@@ -117,6 +124,15 @@ func init() {
 	commonMetricsService = services.NewDBCommonMetricsService(db, dbCountersRepo)
 }
 
+func init() {
+	if configs.DatabaseConnectionString == "" {
+		prepareApplicationWithMemStorage()
+		return
+	}
+
+	prepareApplicationWithDb()
+}
+
 func main() {
 	defer func() {
 		if db != nil {
@@ -138,4 +154,5 @@ func main() {
 	if serverStartingError != nil {
 		log.Err(serverStartingError).Msg("Could not start metrics server")
 	}
+	wg.Wait()
 }
