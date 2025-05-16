@@ -15,10 +15,7 @@ type CountersService struct {
 }
 
 func (service *CountersService) Update(ctx context.Context, key domain.CounterName, value domain.CounterValue) error {
-	exists, err := service.repository.Exists(ctx, key)
-	if err != nil {
-		log.Err(err).Msg("Error on obtaining metric existance")
-	}
+	exists := service.repository.Exists(ctx, key)
 	if !exists {
 		service.repository.Set(ctx, key, value)
 		log.Info().Str("Counter name", string(key)).Str("Counter value", value.ToString()).Msg("Created counter")
@@ -37,11 +34,7 @@ func (service *CountersService) Update(ctx context.Context, key domain.CounterNa
 }
 
 func (service *CountersService) GetByKey(ctx context.Context, key domain.CounterName) (dto domain.Metric, exists bool, err error) {
-	itemExists, errorOnItemExists := service.repository.Exists(ctx, key)
-	if errorOnItemExists != nil {
-		err = errorOnItemExists
-		return
-	}
+	itemExists := service.repository.Exists(ctx, key)
 	if !itemExists {
 		exists = false
 		return

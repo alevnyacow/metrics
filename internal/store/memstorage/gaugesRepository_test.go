@@ -13,10 +13,7 @@ var gaugeValue = domain.GaugeValue(25.25)
 func TestGaugeExists(t *testing.T) {
 	gaugesRepository := memstorage.NewGaugesRepository()
 	gaugesRepository.Set(ctx, gaugeName, gaugeValue)
-	exists, err := gaugesRepository.Exists(ctx, gaugeName)
-	if err != nil {
-		t.Error("Error where should not")
-	}
+	exists := gaugesRepository.Exists(ctx, gaugeName)
 	if !exists {
 		t.Error("Cound not find existing gauge")
 	}
@@ -24,10 +21,7 @@ func TestGaugeExists(t *testing.T) {
 
 func TestGaugeDoesNotExist(t *testing.T) {
 	gaugesRepository := memstorage.NewGaugesRepository()
-	exists, err := gaugesRepository.Exists(ctx, gaugeName)
-	if err != nil {
-		t.Error("Error where should not")
-	}
+	exists := gaugesRepository.Exists(ctx, gaugeName)
 	if exists {
 		t.Error("Found non existing gauge")
 	}

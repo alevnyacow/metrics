@@ -15,12 +15,7 @@ type GaugesService struct {
 }
 
 func (service *GaugesService) GetByKey(ctx context.Context, key domain.GaugeName) (dto domain.Metric, exists bool, err error) {
-	metricExists, errOnExists := service.repository.Exists(ctx, key)
-	if errOnExists != nil {
-		err = errOnExists
-		return
-	}
-
+	metricExists := service.repository.Exists(ctx, key)
 	if !metricExists {
 		exists = false
 		return

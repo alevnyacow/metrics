@@ -105,7 +105,7 @@ func prepareApplicationWithMemStorage() {
 
 }
 
-func prepareApplicationWithDb() {
+func prepareApplicationWithDB() {
 	database, err := sql.Open("postgres", configs.DatabaseConnectionString)
 	db = database
 	if err != nil {
@@ -135,7 +135,7 @@ func init() {
 		return
 	}
 
-	prepareApplicationWithDb()
+	prepareApplicationWithDB()
 }
 
 func main() {

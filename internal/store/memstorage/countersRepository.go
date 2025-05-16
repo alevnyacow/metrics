@@ -27,9 +27,9 @@ func (repository *CountersRepository) GetValue(ctx context.Context, key domain.C
 	return repository.data[key], nil
 }
 
-func (repository *CountersRepository) Exists(ctx context.Context, key domain.CounterName) (bool, error) {
+func (repository *CountersRepository) Exists(ctx context.Context, key domain.CounterName) bool {
 	_, found := repository.data[key]
-	return found, nil
+	return found
 }
 
 func (repository *CountersRepository) GetAll(ctx context.Context) ([]domain.Counter, error) {

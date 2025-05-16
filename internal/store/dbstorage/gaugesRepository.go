@@ -52,9 +52,9 @@ func (repository *GaugesRepository) GetValue(ctx context.Context, key domain.Gau
 	return data.Value, err
 }
 
-func (repository *GaugesRepository) Exists(ctx context.Context, key domain.GaugeName) (bool, error) {
+func (repository *GaugesRepository) Exists(ctx context.Context, key domain.GaugeName) bool {
 	gauge, err := repository.Get(ctx, key)
-	return gauge.Name == key, err
+	return err == nil && gauge.Name == key
 }
 
 func (repository *GaugesRepository) GetAll(ctx context.Context) ([]domain.Gauge, error) {

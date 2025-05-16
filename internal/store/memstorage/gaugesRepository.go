@@ -23,9 +23,9 @@ func (repository *GaugesRepository) Get(ctx context.Context, key domain.GaugeNam
 	return domain.Gauge{Name: key, Value: value}, nil
 }
 
-func (repository *GaugesRepository) Exists(ctx context.Context, key domain.GaugeName) (bool, error) {
+func (repository *GaugesRepository) Exists(ctx context.Context, key domain.GaugeName) bool {
 	_, found := repository.data[key]
-	return found, nil
+	return found
 }
 
 func (repository *GaugesRepository) GetAll(ctx context.Context) ([]domain.Gauge, error) {

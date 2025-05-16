@@ -15,10 +15,7 @@ var ctx = context.Background()
 func TestCounterExists(t *testing.T) {
 	countersRepository := memstorage.NewCountersRepository()
 	countersRepository.Set(ctx, counterName, counterValue)
-	exists, err := countersRepository.Exists(ctx, counterName)
-	if err != nil {
-		t.Error("Error where should not")
-	}
+	exists := countersRepository.Exists(ctx, counterName)
 	if !exists {
 		t.Error("Cound not find existing counter")
 	}
@@ -26,10 +23,7 @@ func TestCounterExists(t *testing.T) {
 
 func TestCounterDoesNotExist(t *testing.T) {
 	countersRepository := memstorage.NewCountersRepository()
-	exists, err := countersRepository.Exists(ctx, counterName)
-	if err != nil {
-		t.Error("Error where should not")
-	}
+	exists := countersRepository.Exists(ctx, counterName)
 	if exists {
 		t.Error("Found non existing counter")
 	}

@@ -49,9 +49,9 @@ func (repository *CountersRepository) GetValue(ctx context.Context, key domain.C
 	return data.Value, error
 }
 
-func (repository *CountersRepository) Exists(ctx context.Context, key domain.CounterName) (bool, error) {
-	counter, error := repository.Get(ctx, key)
-	return counter.Name == key, error
+func (repository *CountersRepository) Exists(ctx context.Context, key domain.CounterName) bool {
+	counter, err := repository.Get(ctx, key)
+	return err == nil && counter.Name == key
 }
 
 func (repository *CountersRepository) GetAll(ctx context.Context) ([]domain.Counter, error) {
