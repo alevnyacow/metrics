@@ -29,6 +29,9 @@ func (repository *CountersRepository) Set(ctx context.Context, key domain.Counte
 		key,
 		value,
 	)
+	if err != nil {
+		log.Err(err).Msg("Error on setting value in relational database for counters repository")
+	}
 	return err
 }
 

@@ -29,6 +29,9 @@ func (repository *GaugesRepository) Set(ctx context.Context, key domain.GaugeNam
 		key,
 		value,
 	)
+	if err != nil {
+		log.Err(err).Msg("Error on setting value in relational database for gauges repository")
+	}
 	return err
 }
 
