@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"net/http"
 	"sync"
 	"time"
@@ -25,7 +24,6 @@ var gaugesService *services.GaugesService
 var healthcheckService *services.HealthcheckService
 var commonMetricsService services.CommonMetricsService
 var configs = config.ParseServerConfigs()
-var db *sql.DB
 var ctx = context.Background()
 var mutex = &sync.Mutex{}
 var wg = sync.WaitGroup{}
@@ -105,13 +103,8 @@ func prepareApplicationWithMemStorage() {
 
 }
 
-func prepareApplicationWithDB() {
-	database, err := sql.Open("postgres", configs.DatabaseConnectionString)
-	db = database
-	if err != nil {
-		panic(err)
-	}
-
+func prepareApplicationWithDB(connectionString string) func() {
+	db, closeDatabase := dbstorage.InitDatabase(connectionString)
 	dbCountersRepo := dbstorage.NewCountersRepository(db)
 	retries.WithRetries(func() error { return dbCountersRepo.PrepareDB(ctx) })
 	dbGaugesRepo := dbstorage.NewGaugesRepository(db)
@@ -127,26 +120,16 @@ func prepareApplicationWithDB() {
 	)
 	healthcheckService = services.NewHealtheckService(db)
 	commonMetricsService = services.NewDBCommonMetricsService(db, dbCountersRepo)
-}
-
-func init() {
-	if configs.DatabaseConnectionString == "" {
-		prepareApplicationWithMemStorage()
-		return
-	}
-
-	prepareApplicationWithDB()
+	return closeDatabase
 }
 
 func main() {
-	defer func() {
-		if db != nil {
-			err := db.Close()
-			if err != nil {
-				log.Err(err).Msg("Error on closing database")
-			}
-		}
-	}()
+	if configs.DatabaseConnectionString == "" {
+		prepareApplicationWithMemStorage()
+	} else {
+		closeDatabase := prepareApplicationWithDB(configs.DatabaseConnectionString)
+		defer closeDatabase()
+	}
 
 	chiRouter := chi.NewRouter()
 	apiController := api.NewController(countersService, gaugesService, healthcheckService, commonMetricsService, mutex)
