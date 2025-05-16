@@ -6,16 +6,26 @@ import (
 
 	"github.com/alevnyacow/metrics/internal/retries"
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
 func InitDatabase(connectionString string, migrationsPath string) (db *sql.DB, closeConnection func()) {
-	migration, err := migrate.New(
+	database, err := sql.Open("postgres", connectionString)
+	if err != nil {
+		panic(err)
+	}
+	db = database
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		log.Err(err).Msg("Error creating driver")
+	}
+	migration, err := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file://%s", migrationsPath),
-		connectionString,
+		"postgres",
+		driver,
 	)
 
 	if err != nil {
@@ -29,12 +39,6 @@ func InitDatabase(connectionString string, migrationsPath string) (db *sql.DB, c
 			log.Err(errOnDown).Msg("Error on dropping migrations")
 		}
 	}
-
-	database, err := sql.Open("pgx", connectionString)
-	if err != nil {
-		panic(err)
-	}
-	db = database
 
 	closeConnection = func() {
 		if db != nil {
