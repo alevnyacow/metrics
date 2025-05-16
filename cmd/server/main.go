@@ -36,8 +36,16 @@ func saveAllMetricsToFile(
 	inMemoryCountersRepository *memstorage.CountersRepository,
 	inMemoryGaugesRepository *memstorage.GaugesRepository,
 ) {
-	counters := inMemoryCountersRepository.GetAll(ctx)
-	gauges := inMemoryGaugesRepository.GetAll(ctx)
+	counters, errOnGettingCounters := inMemoryCountersRepository.GetAll(ctx)
+	if errOnGettingCounters != nil {
+		log.Err(errOnGettingCounters).Msg("Error on getting counters while saving to file")
+		return
+	}
+	gauges, errOnGettingGauges := inMemoryGaugesRepository.GetAll(ctx)
+	if errOnGettingGauges != nil {
+		log.Err(errOnGettingGauges).Msg("Error on getting gauges while saving to file")
+		return
+	}
 	counterGaugesLen := len(counters) + len(gauges)
 	allMetrics := make([]domain.Metric, counterGaugesLen)
 
@@ -98,11 +106,8 @@ func prepareApplicationWithMemStorage() {
 }
 
 func prepareApplicationWithDb() {
-	err := retries.WithRetries(func() error {
-		database, err := sql.Open("postgres", configs.DatabaseConnectionString)
-		db = database
-		return err
-	})
+	database, err := sql.Open("postgres", configs.DatabaseConnectionString)
+	db = database
 	if err != nil {
 		panic(err)
 	}

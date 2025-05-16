@@ -9,9 +9,20 @@ func (controller *MetricsController) handleGetAllMetrics(w http.ResponseWriter, 
 	controller.mutex.Lock()
 	defer controller.mutex.Unlock()
 
+	counters, errOnGettingCounters := controller.countersService.GetAll(r.Context())
+	if errOnGettingCounters != nil {
+		serviceErrorResponse(errOnGettingCounters)(w, r)
+		return
+	}
+	gauges, errOnGettingGauges := controller.gaugesService.GetAll(r.Context())
+	if errOnGettingGauges != nil {
+		serviceErrorResponse(errOnGettingGauges)(w, r)
+		return
+	}
+
 	metrics := append(
-		controller.countersService.GetAll(r.Context()),
-		controller.gaugesService.GetAll(r.Context())...,
+		counters,
+		gauges...,
 	)
 	allMetricsJSON, marshalingError := json.Marshal(metrics)
 	if marshalingError != nil {

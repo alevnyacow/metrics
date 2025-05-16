@@ -17,7 +17,10 @@ func TestCounterValue(t *testing.T) {
 	countersRepo := memstorage.NewCountersRepository()
 	countersService := services.NewCountersService(countersRepo, func() {})
 	countersService.Update(ctx, counterName, counterValue)
-	counter, found := countersService.GetByKey(ctx, counterName)
+	counter, found, err := countersService.GetByKey(ctx, counterName)
+	if err != nil {
+		t.Error("Error where should not")
+	}
 	if !found {
 		t.Error("Have not found existing counter")
 	}

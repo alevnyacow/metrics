@@ -76,3 +76,10 @@ func failedUpdatesResponse(err error) http.HandlerFunc {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
+
+func serviceErrorResponse(err error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Err(err).Msg("Error from service while executing")
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}

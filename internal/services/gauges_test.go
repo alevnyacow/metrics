@@ -15,7 +15,10 @@ func TestGaugeValue(t *testing.T) {
 	gaugesRepo := memstorage.NewGaugesRepository()
 	gaugesService := services.NewGaugesService(gaugesRepo, func() {})
 	gaugesService.Set(ctx, gaugeName, gaugeValue)
-	gauge, found := gaugesService.GetByKey(ctx, gaugeName)
+	gauge, found, err := gaugesService.GetByKey(ctx, gaugeName)
+	if err != nil {
+		t.Error("Error where should not")
+	}
 	if !found {
 		t.Error("Have not found existing counter")
 	}

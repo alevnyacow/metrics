@@ -15,7 +15,10 @@ var ctx = context.Background()
 func TestCounterExists(t *testing.T) {
 	countersRepository := memstorage.NewCountersRepository()
 	countersRepository.Set(ctx, counterName, counterValue)
-	exists := countersRepository.Exists(ctx, counterName)
+	exists, err := countersRepository.Exists(ctx, counterName)
+	if err != nil {
+		t.Error("Error where should not")
+	}
 	if !exists {
 		t.Error("Cound not find existing counter")
 	}
@@ -23,7 +26,10 @@ func TestCounterExists(t *testing.T) {
 
 func TestCounterDoesNotExist(t *testing.T) {
 	countersRepository := memstorage.NewCountersRepository()
-	exists := countersRepository.Exists(ctx, counterName)
+	exists, err := countersRepository.Exists(ctx, counterName)
+	if err != nil {
+		t.Error("Error where should not")
+	}
 	if exists {
 		t.Error("Found non existing counter")
 	}
@@ -32,7 +38,10 @@ func TestCounterDoesNotExist(t *testing.T) {
 func TestCounterValue(t *testing.T) {
 	countersRepository := memstorage.NewCountersRepository()
 	countersRepository.Set(ctx, counterName, counterValue)
-	foundCounterValue := countersRepository.GetValue(ctx, counterName)
+	foundCounterValue, err := countersRepository.GetValue(ctx, counterName)
+	if err != nil {
+		t.Error("Error where should not")
+	}
 	if foundCounterValue != counterValue {
 		t.Errorf("Expected %d, got %d", counterValue, foundCounterValue)
 	}
@@ -40,7 +49,10 @@ func TestCounterValue(t *testing.T) {
 
 func TestCountersAreEmptyAfterCreation(t *testing.T) {
 	countersRepository := memstorage.NewCountersRepository()
-	counters := countersRepository.GetAll(ctx)
+	counters, err := countersRepository.GetAll(ctx)
+	if err != nil {
+		t.Error("Error where should not")
+	}
 	if len(counters) != 0 {
 		t.Error("Memstorage counters are not empty after creation")
 	}

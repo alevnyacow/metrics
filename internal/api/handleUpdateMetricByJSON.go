@@ -31,7 +31,10 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		if parsed {
 			controller.gaugesService.Set(r.Context(), domain.GaugeName(payload.ID), value)
 		}
-		updatedGauge, exists := controller.gaugesService.GetByKey(r.Context(), domain.GaugeName(payload.ID))
+		updatedGauge, exists, err := controller.gaugesService.GetByKey(r.Context(), domain.GaugeName(payload.ID))
+		if err != nil {
+			serviceErrorResponse(err)(w, r)
+		}
 		if !exists {
 			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return
@@ -50,7 +53,10 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		if parsed {
 			controller.countersService.Update(r.Context(), domain.CounterName(payload.ID), value)
 		}
-		updatedCounter, exists := controller.countersService.GetByKey(r.Context(), domain.CounterName(payload.ID))
+		updatedCounter, exists, err := controller.countersService.GetByKey(r.Context(), domain.CounterName(payload.ID))
+		if err != nil {
+			serviceErrorResponse(err)(w, r)
+		}
 		if !exists {
 			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return

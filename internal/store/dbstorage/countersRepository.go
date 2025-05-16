@@ -22,48 +22,43 @@ func (repository *CountersRepository) PrepareDB(ctx context.Context) error {
 	return err
 }
 
-func (repository *CountersRepository) Set(ctx context.Context, key domain.CounterName, value domain.CounterValue) {
-	repository.db.ExecContext(
+func (repository *CountersRepository) Set(ctx context.Context, key domain.CounterName, value domain.CounterValue) error {
+	_, err := repository.db.ExecContext(
 		ctx,
 		"INSERT INTO counters (name, value) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET value = $2",
 		key,
 		value,
 	)
+	return err
 }
 
-func (repository *CountersRepository) Get(ctx context.Context, key domain.CounterName) domain.Counter {
+func (repository *CountersRepository) Get(ctx context.Context, key domain.CounterName) (domain.Counter, error) {
 	var counter domain.Counter
 
 	row := repository.db.QueryRowContext(ctx, "SELECT name, value FROM counters WHERE name = $1", key)
 	err := row.Scan(&counter.Name, &counter.Value)
-	if err != nil {
-		log.Err(err).Msg("Error on obtaining counter value from relational database")
-	}
 
-	return counter
+	return counter, err
 }
 
-func (repository *CountersRepository) GetValue(ctx context.Context, key domain.CounterName) domain.CounterValue {
-	data := repository.Get(ctx, key)
-	return data.Value
+func (repository *CountersRepository) GetValue(ctx context.Context, key domain.CounterName) (domain.CounterValue, error) {
+	data, error := repository.Get(ctx, key)
+	return data.Value, error
 }
 
-func (repository *CountersRepository) Exists(ctx context.Context, key domain.CounterName) bool {
-	counter := repository.Get(ctx, key)
-	return counter.Name == key
+func (repository *CountersRepository) Exists(ctx context.Context, key domain.CounterName) (bool, error) {
+	counter, error := repository.Get(ctx, key)
+	return counter.Name == key, error
 }
 
-func (repository *CountersRepository) GetAll(ctx context.Context) []domain.Counter {
+func (repository *CountersRepository) GetAll(ctx context.Context) ([]domain.Counter, error) {
 	counters := make([]domain.Counter, 0)
 	rows, err := repository.db.QueryContext(ctx, "SELECT name, value FROM counters")
 	if err != nil {
 		log.Err(err).Msg("Error on obtaining counters from relational database")
-		return counters
+		return counters, err
 	}
-	if rows.Err() != nil {
-		log.Err(rows.Err()).Msg("Error on obtaining counters from relational database")
-		return counters
-	}
+
 	defer rows.Close()
 	for rows.Next() {
 		var counter domain.Counter
@@ -73,5 +68,9 @@ func (repository *CountersRepository) GetAll(ctx context.Context) []domain.Count
 		}
 		counters = append(counters, counter)
 	}
-	return counters
+	if rows.Err() != nil {
+		log.Err(rows.Err()).Msg("Error on obtaining counters from relational database")
+		return counters, rows.Err()
+	}
+	return counters, nil
 }
