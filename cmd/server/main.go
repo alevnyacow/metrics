@@ -15,7 +15,6 @@ import (
 	"github.com/alevnyacow/metrics/internal/store/filestorage"
 	"github.com/alevnyacow/metrics/internal/store/memstorage"
 	"github.com/go-chi/chi/v5"
-	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
