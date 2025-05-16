@@ -14,14 +14,6 @@ type CountersRepository struct {
 	db *sql.DB
 }
 
-func (repository *CountersRepository) PrepareDB(ctx context.Context) error {
-	_, err := repository.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS counters (name TEXT UNIQUE, value BIGINT)`)
-	if err != nil {
-		log.Err(err).Msg("Error on preparing relational database for counters repository")
-	}
-	return err
-}
-
 func (repository *CountersRepository) Set(ctx context.Context, key domain.CounterName, value domain.CounterValue) error {
 	_, err := repository.db.ExecContext(
 		ctx,

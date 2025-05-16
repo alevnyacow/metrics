@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -104,11 +105,13 @@ func prepareApplicationWithMemStorage() {
 }
 
 func prepareApplicationWithDB(connectionString string) func() {
-	db, closeDatabase := dbstorage.InitDatabase(connectionString)
+	pathToMigration, err := filepath.Abs("../../migrations")
+	if err != nil {
+		log.Err(err).Msg("Error while obtaining path to migrations")
+	}
+	db, closeDatabase := dbstorage.InitDatabase(connectionString, pathToMigration)
 	dbCountersRepo := dbstorage.NewCountersRepository(db)
-	retries.WithRetries(func() error { return dbCountersRepo.PrepareDB(ctx) })
 	dbGaugesRepo := dbstorage.NewGaugesRepository(db)
-	retries.WithRetries(func() error { return dbGaugesRepo.PrepareDB(ctx) })
 
 	countersService = services.NewCountersService(
 		dbCountersRepo,

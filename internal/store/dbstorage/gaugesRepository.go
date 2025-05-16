@@ -14,14 +14,6 @@ type GaugesRepository struct {
 	db *sql.DB
 }
 
-func (repository *GaugesRepository) PrepareDB(ctx context.Context) error {
-	_, err := repository.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS gauges (name TEXT UNIQUE, value DOUBLE PRECISION)`)
-	if err != nil {
-		log.Err(err).Msg("Error on preparing relational database for gauges repository")
-	}
-	return err
-}
-
 func (repository *GaugesRepository) Set(ctx context.Context, key domain.GaugeName, value domain.GaugeValue) error {
 	_, err := repository.db.ExecContext(
 		ctx,
