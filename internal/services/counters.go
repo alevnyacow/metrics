@@ -18,7 +18,6 @@ func (service *CountersService) Update(ctx context.Context, key domain.CounterNa
 	exists, err := service.repository.Exists(ctx, key)
 	if err != nil {
 		log.Err(err).Msg("Error on obtaining metric existance")
-		return err
 	}
 	if !exists {
 		service.repository.Set(ctx, key, value)
