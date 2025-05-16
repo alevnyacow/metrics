@@ -23,6 +23,9 @@ var defaultServerConfigs = ServerConfigs{
 	DatabaseConnectionString: "",
 }
 
+const GaugeType = "gauge"
+const CounterType = "counter"
+
 // parseServerEnvData returns parsed server configuration data
 // from environmental variables.
 func parseServerEnvData() ServerConfigs {

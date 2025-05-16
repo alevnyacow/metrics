@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/domain"
 )
 
@@ -25,7 +26,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		return
 	}
 	switch payload.MType {
-	case "gauge":
+	case config.GaugeType:
 		value, parsed := domain.GaugeRawFloatValue(*payload.Value).ToValue()
 		if parsed {
 			controller.gaugesService.Set(r.Context(), domain.GaugeName(payload.ID), value)
@@ -44,7 +45,7 @@ func (controller *MetricsController) handleUpdateMetricByJSON(w http.ResponseWri
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(metricJSON)
 
-	case "counter":
+	case config.CounterType:
 		value, parsed := domain.CounterRawIntValue(*payload.Delta).ToValue()
 		if parsed {
 			controller.countersService.Update(r.Context(), domain.CounterName(payload.ID), value)

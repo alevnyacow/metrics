@@ -3,16 +3,17 @@ package api
 import (
 	"errors"
 
+	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/domain"
 	"github.com/rs/zerolog/log"
 )
 
 func mTypeFromMetricType(metric domain.Metric) string {
 	if metric.IsCounter() {
-		return "counter"
+		return config.CounterType
 	}
 	if metric.IsGauge() {
-		return "gauge"
+		return config.GaugeType
 	}
 	return ""
 }
@@ -50,7 +51,7 @@ func MapDomainMetricToMetricDTO(domainMetric domain.Metric) Metric {
 
 func (metric Metric) toDomain() domain.Metric {
 	getType := func() domain.MetricType {
-		if metric.MType == "gauge" {
+		if metric.MType == config.GaugeType {
 			return domain.GaugeMetricType
 		}
 		return domain.CounterMetricType
