@@ -1,18 +1,22 @@
 package services
 
-import "github.com/alevnyacow/metrics/internal/domain"
+import (
+	"context"
+
+	"github.com/alevnyacow/metrics/internal/domain"
+)
 
 type GaugesRepository interface {
-	Set(key domain.GaugeName, value domain.GaugeValue)
-	Get(key domain.GaugeName) domain.Gauge
-	Exists(key domain.GaugeName) bool
-	GetAll() []domain.Gauge
+	Set(ctx context.Context, key domain.GaugeName, value domain.GaugeValue) error
+	Get(ctx context.Context, key domain.GaugeName) (domain.Gauge, error)
+	Exists(ctx context.Context, key domain.GaugeName) bool
+	GetAll(ctx context.Context) ([]domain.Gauge, error)
 }
 
 type CountersRepository interface {
-	Set(key domain.CounterName, value domain.CounterValue)
-	Get(key domain.CounterName) domain.Counter
-	GetValue(key domain.CounterName) domain.CounterValue
-	Exists(key domain.CounterName) bool
-	GetAll() []domain.Counter
+	Set(ctx context.Context, key domain.CounterName, value domain.CounterValue) error
+	Get(ctx context.Context, key domain.CounterName) (domain.Counter, error)
+	GetValue(ctx context.Context, key domain.CounterName) (domain.CounterValue, error)
+	Exists(ctx context.Context, key domain.CounterName) bool
+	GetAll(ctx context.Context) ([]domain.Counter, error)
 }
