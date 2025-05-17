@@ -26,10 +26,6 @@ func InitDatabase(connectionString string, migrationsPath string) (db *sql.DB, c
 
 		if errOnUp := retries.WithRetries(migration.Up); errOnUp != nil {
 			log.Err(errOnUp).Msg("Error on applying migrations")
-			errOnDown := retries.WithRetries(migration.Down)
-			if errOnDown != nil {
-				log.Err(errOnDown).Msg("Error on dropping migrations")
-			}
 		}
 
 		database, err := sql.Open("postgres", connectionString)
