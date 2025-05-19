@@ -21,16 +21,18 @@ func WithHashCheck(key string) func(handler http.Handler) http.Handler {
 				body, bodyReadingError := io.ReadAll(r.Body)
 				if bodyReadingError != nil {
 					log.Err(bodyReadingError).Msg("Error on body reading")
-				}
-				hashedBody, hashError := hash.SignedSHA256(body, []byte(key))
-				if hashError != nil {
-					log.Err(hashError).Msg("Hash error")
-				}
-				w.Header().Add("HashSHA256", hex.EncodeToString(hashedBody))
-				if !hash.SameSHA256(hashData, hashedBody, []byte(key)) {
-					w.Header().Add("Content-Type", "application/json")
-					w.WriteHeader(http.StatusBadRequest)
-					return
+				} else {
+					hashedBody, hashError := hash.SignedSHA256(body, []byte(key))
+					if hashError != nil {
+						log.Err(hashError).Msg("Hash error")
+					}
+					w.Header().Add("HashSHA256", hex.EncodeToString(hashedBody))
+					if !hash.SameSHA256(hashData, hashedBody, []byte(key)) {
+						w.Header().Add("Content-Type", "application/json")
+						w.WriteHeader(http.StatusBadRequest)
+						return
+					}
+
 				}
 			}
 			handler.ServeHTTP(w, r)
