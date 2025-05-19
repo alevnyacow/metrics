@@ -3,6 +3,7 @@ package hash
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/hex"
 )
 
 func SignedSHA256(data, key []byte) ([]byte, error) {
@@ -17,9 +18,9 @@ func SignedSHA256(data, key []byte) ([]byte, error) {
 	return mac.Sum(nil), hashError
 }
 
-func SameSHA256(message, messageMAC, key []byte) bool {
+func SameSHA256(hashFromHeader string, messageMAC, key []byte) bool {
 	mac := hmac.New(sha256.New, key)
-	mac.Write(message)
+	mac.Write(messageMAC)
 	expectedMAC := mac.Sum(nil)
-	return hmac.Equal(messageMAC, expectedMAC)
+	return hashFromHeader == hex.EncodeToString(expectedMAC)
 }
