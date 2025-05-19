@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/hex"
 	"io"
 	"net/http"
 
@@ -24,7 +25,7 @@ func WithHashCheck(key string) func(handler http.Handler) http.Handler {
 			if hashError != nil {
 				log.Err(hashError).Msg("Hash error")
 			}
-			w.Header().Add("HashSHA256", string(hashedBody))
+			w.Header().Add("HashSHA256", hex.EncodeToString(hashedBody))
 			if !hash.SameSHA256(hashedBody, []byte(hashData), []byte(key)) {
 				w.WriteHeader(http.StatusBadRequest)
 				return
