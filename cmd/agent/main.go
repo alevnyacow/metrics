@@ -108,7 +108,7 @@ func sendPostWithGZippedBody(url string, body []byte, key string) error {
 		SetBody(gzippedData)
 
 	if key != "" {
-		data, hashError := hash.SignedSHA256(gzippedData, []byte(key))
+		data, hashError := hash.SignedSHA256(body, []byte(key))
 		if hashError != nil {
 			log.Err(hashError).Msg("Error while getting signed hash")
 		}

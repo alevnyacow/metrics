@@ -27,6 +27,7 @@ func WithHashCheck(key string) func(handler http.Handler) http.Handler {
 			}
 			w.Header().Add("HashSHA256", hex.EncodeToString(hashedBody))
 			if !hash.SameSHA256(hashedBody, []byte(hashData), []byte(key)) {
+				w.Header().Add("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
