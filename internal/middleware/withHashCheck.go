@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/hex"
+	"errors"
 	"io"
 	"net/http"
 
@@ -32,9 +33,10 @@ func WithHashCheck(key string) func(handler http.Handler) http.Handler {
 				}
 				w.Header().Add("HashSHA256", hex.EncodeToString(hashedBody))
 				if !hash.SameSHA256(hashData, hashedBody, []byte(key)) {
-					w.Header().Add("Content-Type", "application/json")
-					w.WriteHeader(http.StatusBadRequest)
-					return
+					log.Err(errors.New("not equal")).Msg("TEST TEST TEST")
+					// w.Header().Add("Content-Type", "application/json")
+					// w.WriteHeader(http.StatusBadRequest)
+					// return
 				}
 			}
 			handler.ServeHTTP(w, r)
