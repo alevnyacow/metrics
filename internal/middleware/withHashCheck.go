@@ -19,6 +19,7 @@ func WithHashCheck(key string) func(handler http.Handler) http.Handler {
 			hashData := r.Header.Get("HashSHA256")
 			if hashData != "" {
 				body, bodyReadingError := io.ReadAll(r.Body)
+				defer r.Body.Close()
 				if bodyReadingError != nil {
 					log.Err(bodyReadingError).Msg("Error on body reading")
 				} else {
