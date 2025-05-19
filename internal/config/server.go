@@ -13,6 +13,7 @@ type ServerConfigs struct {
 	FileStoragePath          string `env:"FILE_STORAGE_PATH"`
 	Restore                  bool   `env:"RESTORE"`
 	DatabaseConnectionString string `env:"DATABASE_DSN"`
+	Key                      string `env:"KEY"`
 }
 
 var defaultServerConfigs = ServerConfigs{
@@ -21,6 +22,7 @@ var defaultServerConfigs = ServerConfigs{
 	FileStoragePath:          "metrics.json",
 	Restore:                  true,
 	DatabaseConnectionString: "",
+	Key:                      "",
 }
 
 const GaugeType = "gauge"
@@ -47,6 +49,7 @@ func parseServerArgsConfigs() ServerConfigs {
 	fileStoragePathPointer := flag.String("f", defaultServerConfigs.FileStoragePath, "File storage path")
 	restorePointer := flag.Bool("r", defaultServerConfigs.Restore, "Flag to restore data from file")
 	dbConnectionStringPointer := flag.String("d", defaultServerConfigs.DatabaseConnectionString, "Database connection string")
+	keyPointer := flag.String("k", defaultAgentConfigs.Key, "SHA Key")
 
 	flag.Parse()
 
@@ -56,6 +59,7 @@ func parseServerArgsConfigs() ServerConfigs {
 		FileStoragePath:          *fileStoragePathPointer,
 		Restore:                  *restorePointer,
 		DatabaseConnectionString: *dbConnectionStringPointer,
+		Key:                      *keyPointer,
 	}
 }
 
@@ -74,5 +78,6 @@ func mergeServerConfigs(envConfigs ServerConfigs, argsConfigs ServerConfigs) Ser
 		FileStoragePath:          selectExistingString(envConfigs.FileStoragePath, argsConfigs.FileStoragePath),
 		DatabaseConnectionString: selectExistingString(envConfigs.DatabaseConnectionString, argsConfigs.DatabaseConnectionString),
 		Restore:                  restore(),
+		Key:                      selectExistingString(envConfigs.Key, argsConfigs.Key),
 	}
 }
