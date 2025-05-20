@@ -10,6 +10,7 @@ import (
 
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
+	"github.com/alevnyacow/metrics/internal/hash"
 	"github.com/alevnyacow/metrics/internal/retries"
 	"github.com/alevnyacow/metrics/internal/services"
 	"github.com/go-resty/resty/v2"
@@ -55,7 +56,7 @@ func main() {
 			log.Err(marshalingError).Msg("Error while marshaling metrics DTO")
 			return
 		}
-		requestErr := retries.WithRetries(func() error { return sendPostWithGZippedBody(updateURL, metricJSONData) })
+		requestErr := retries.WithRetries(func() error { return sendPostWithGZippedBody(updateURL, metricJSONData, configs.Key) })
 		if requestErr != nil {
 			log.Err(requestErr).Msg("Could not send metric update request")
 		}
@@ -93,16 +94,28 @@ func gzippedBytes(data []byte) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func sendPostWithGZippedBody(url string, body []byte) error {
+func sendPostWithGZippedBody(url string, body []byte, key string) error {
 	gzippedData, gzipError := gzippedBytes(body)
 	if gzipError != nil {
 		return gzipError
 	}
-	_, err := client.R().
+
+	request := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Content-Encoding", "gzip").
 		SetHeader("Accept-Encoding", "gzip").
-		SetBody(gzippedData).
-		Post(url)
-	return err
+		SetBody(gzippedData)
+
+	if key != "" {
+		data, hashError := hash.SignedSHA256(gzippedData, key)
+		if hashError != nil {
+			log.Err(hashError).Msg("Error while getting signed hash")
+		}
+		request.SetHeader("HashSHA256", data)
+	}
+	_, requestError := request.Post(url)
+	if requestError != nil {
+		log.Err(requestError).Msg("Error on request")
+	}
+	return requestError
 }
