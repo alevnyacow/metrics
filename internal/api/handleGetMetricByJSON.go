@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/alevnyacow/metrics/internal/config"
 	"github.com/alevnyacow/metrics/internal/domain"
 )
 
 func (controller *MetricsController) handleGetMetricByJSON(w http.ResponseWriter, r *http.Request) {
+	controller.mutex.Lock()
+	defer controller.mutex.Unlock()
+
 	decoder := json.NewDecoder(r.Body)
 	payload := Metric{}
 	err := decoder.Decode(&payload)
@@ -20,8 +24,11 @@ func (controller *MetricsController) handleGetMetricByJSON(w http.ResponseWriter
 		return
 	}
 	switch payload.MType {
-	case "gauge":
-		updatedGauge, exists := controller.gaugesService.GetByKey(domain.GaugeName(payload.ID))
+	case config.GaugeType:
+		updatedGauge, exists, err := controller.gaugesService.GetByKey(r.Context(), domain.GaugeName(payload.ID))
+		if err != nil {
+			serviceErrorResponse(err)(w, r)
+		}
 		if !exists {
 			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return
@@ -35,8 +42,11 @@ func (controller *MetricsController) handleGetMetricByJSON(w http.ResponseWriter
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(metricJSON)
 
-	case "counter":
-		updatedCounter, exists := controller.countersService.GetByKey(domain.CounterName(payload.ID))
+	case config.CounterType:
+		updatedCounter, exists, err := controller.countersService.GetByKey(r.Context(), domain.CounterName(payload.ID))
+		if err != nil {
+			serviceErrorResponse(err)(w, r)
+		}
 		if !exists {
 			nonExistingMetricOfKnownTypeResponse(payload.ID)(w, r)
 			return

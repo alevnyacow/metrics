@@ -3,7 +3,11 @@
 // It includes counters service, gauges service and metrics collection service.
 package services
 
-import "github.com/alevnyacow/metrics/internal/domain"
+import (
+	"database/sql"
+
+	"github.com/alevnyacow/metrics/internal/domain"
+)
 
 func NewCountersService(repository CountersRepository, afterUpdate func()) *CountersService {
 	return &CountersService{
@@ -23,5 +27,25 @@ func NewMetricsCollectionService() *MetricsCollectionService {
 	return &MetricsCollectionService{
 		gauges:   make([]domain.Gauge, 0),
 		counters: make([]domain.Counter, 0),
+	}
+}
+
+func NewHealtheckService(db *sql.DB) *HealthcheckService {
+	return &HealthcheckService{
+		db: db,
+	}
+}
+
+func NewInMemoryCommonMetricsService(countersService *CountersService, gaugesService *GaugesService) *InMemoryCommonMetricsService {
+	return &InMemoryCommonMetricsService{
+		countersService: countersService,
+		gaugesService:   gaugesService,
+	}
+}
+
+func NewDBCommonMetricsService(db *sql.DB, countersRepository CountersRepository) *DBCommonMetricsService {
+	return &DBCommonMetricsService{
+		db:                 db,
+		countersRepository: countersRepository,
 	}
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/alevnyacow/metrics/internal/domain"
 	"github.com/rs/zerolog/log"
 )
@@ -12,32 +14,48 @@ type CountersService struct {
 	afterUpdate func()
 }
 
-func (service *CountersService) Update(key domain.CounterName, value domain.CounterValue) {
-	if !service.repository.Exists(key) {
-		service.repository.Set(key, value)
+func (service *CountersService) Update(ctx context.Context, key domain.CounterName, value domain.CounterValue) error {
+	exists := service.repository.Exists(ctx, key)
+	if !exists {
+		service.repository.Set(ctx, key, value)
 		log.Info().Str("Counter name", string(key)).Str("Counter value", value.ToString()).Msg("Created counter")
-		return
+		return nil
 	}
-	summedValue := value + service.repository.GetValue(key)
-	service.repository.Set(key, summedValue)
+	counterValue, counterValueObtainingError := service.repository.GetValue(ctx, key)
+	if counterValueObtainingError != nil {
+		log.Err(counterValueObtainingError).Msg("Error on obtain counter value")
+		return counterValueObtainingError
+	}
+	summedValue := value + counterValue
+	service.repository.Set(ctx, key, summedValue)
 	service.afterUpdate()
 	log.Info().Str("Counter name", string(key)).Str("Counter value", value.ToString()).Msg("Updated counter")
+	return nil
 }
 
-func (service *CountersService) GetByKey(key domain.CounterName) (dto domain.Metric, exists bool) {
-	if !service.repository.Exists(key) {
+func (service *CountersService) GetByKey(ctx context.Context, key domain.CounterName) (dto domain.Metric, exists bool, err error) {
+	itemExists := service.repository.Exists(ctx, key)
+	if !itemExists {
 		exists = false
 		return
 	}
 	exists = true
-	counterDTO := service.repository.Get(key)
+	counterDTO, errorOnObtainingDTO := service.repository.Get(ctx, key)
+	if errorOnObtainingDTO != nil {
+		err = errorOnObtainingDTO
+		return
+	}
 	dto = counterDTO.ToMetricModel()
 	return
 }
 
-func (service *CountersService) GetAll() (metricDTOs []domain.Metric) {
+func (service *CountersService) GetAll(ctx context.Context) (metricDTOs []domain.Metric, err error) {
 	metricDTOs = make([]domain.Metric, 0)
-	counters := service.repository.GetAll()
+	counters, errorOnGetting := service.repository.GetAll(ctx)
+	if errorOnGetting != nil {
+		err = errorOnGetting
+		return
+	}
 	for _, counterDTO := range counters {
 		metricDTOs = append(metricDTOs, counterDTO.ToMetricModel())
 	}

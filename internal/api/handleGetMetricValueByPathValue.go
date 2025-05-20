@@ -19,14 +19,22 @@ func (controller *MetricsController) handleGetMetricValueByPathValue(w http.Resp
 	}
 	switch metricType {
 	case domain.CounterMetricType:
-		counter, counterWasFound := controller.countersService.GetByKey(domain.CounterName(metricName))
+		counter, counterWasFound, err := controller.countersService.GetByKey(r.Context(), domain.CounterName(metricName))
+		if err != nil {
+			serviceErrorResponse(err)(w, r)
+			return
+		}
 		if !counterWasFound {
 			nonExistingMetricOfKnownTypeResponse(metricName)(w, r)
 			return
 		}
 		w.Write([]byte(counter.Value))
 	case domain.GaugeMetricType:
-		gauge, gaugeWasFound := controller.gaugesService.GetByKey(domain.GaugeName(metricName))
+		gauge, gaugeWasFound, err := controller.gaugesService.GetByKey(r.Context(), domain.GaugeName(metricName))
+		if err != nil {
+			serviceErrorResponse(err)(w, r)
+			return
+		}
 		if !gaugeWasFound {
 			nonExistingMetricOfKnownTypeResponse(metricName)(w, r)
 			return

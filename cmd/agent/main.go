@@ -10,6 +10,7 @@ import (
 
 	"github.com/alevnyacow/metrics/internal/api"
 	"github.com/alevnyacow/metrics/internal/config"
+	"github.com/alevnyacow/metrics/internal/retries"
 	"github.com/alevnyacow/metrics/internal/services"
 	"github.com/go-resty/resty/v2"
 	"github.com/rs/zerolog/log"
@@ -45,17 +46,18 @@ func main() {
 	sendingGoroutine := repetetiveGoroutineCreator(configs.ReportInterval, func() {
 		mutex.RLock()
 		defer mutex.RUnlock()
+		metricDTOs := make([]api.Metric, 0)
 		for _, metric := range metricsCollectionService.CollectedMetrics() {
-			metricDTO := api.MapDomainMetricToMetricDTO(metric)
-			metricJSONData, marshalingError := json.Marshal(metricDTO)
-			if marshalingError != nil {
-				log.Err(marshalingError).Msg("Error while marshaling metrics DTO")
-				return
-			}
-			requestErr := sendPostWithGZippedBody(updateURL, metricJSONData)
-			if requestErr != nil {
-				log.Err(requestErr).Msg("Could not send metric update request")
-			}
+			metricDTOs = append(metricDTOs, api.MapDomainMetricToMetricDTO(metric))
+		}
+		metricJSONData, marshalingError := json.Marshal(metricDTOs)
+		if marshalingError != nil {
+			log.Err(marshalingError).Msg("Error while marshaling metrics DTO")
+			return
+		}
+		requestErr := retries.WithRetries(func() error { return sendPostWithGZippedBody(updateURL, metricJSONData) })
+		if requestErr != nil {
+			log.Err(requestErr).Msg("Could not send metric update request")
 		}
 	})
 
