@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"io"
 	"net/http"
@@ -26,17 +25,16 @@ func WithHashCheck(key string) func(handler http.Handler) http.Handler {
 					return
 				}
 				r.Body = io.NopCloser(bytes.NewBuffer(body))
-
-				hashedBody, hashError := hash.SignedSHA256(body, []byte(key))
+				hashedBody, hashError := hash.SignedSHA256(body, key)
 				if hashError != nil {
 					log.Err(hashError).Msg("Hash error")
 				}
-				w.Header().Add("HashSHA256", hex.EncodeToString(hashedBody))
-				if !hash.SameSHA256(hashData, hashedBody, []byte(key)) {
-					log.Err(errors.New("not equal")).Msg("TEST TEST TEST")
-					// w.Header().Add("Content-Type", "application/json")
-					// w.WriteHeader(http.StatusBadRequest)
-					// return
+				w.Header().Add("HashSHA256", hashedBody)
+				if hashedBody != hashData {
+					log.Err(errors.New("hashes are not the same")).Msg("Access denied - hashes are not the same")
+					w.Header().Add("Content-Type", "application/json")
+					w.WriteHeader(http.StatusBadRequest)
+					return
 				}
 			}
 			handler.ServeHTTP(w, r)

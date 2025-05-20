@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"sync"
@@ -108,11 +107,11 @@ func sendPostWithGZippedBody(url string, body []byte, key string) error {
 		SetBody(gzippedData)
 
 	if key != "" {
-		data, hashError := hash.SignedSHA256(body, []byte(key))
+		data, hashError := hash.SignedSHA256(gzippedData, key)
 		if hashError != nil {
 			log.Err(hashError).Msg("Error while getting signed hash")
 		}
-		request.SetHeader("HashSHA256", hex.EncodeToString(data))
+		request.SetHeader("HashSHA256", data)
 	}
 	_, requestError := request.Post(url)
 	if requestError != nil {
