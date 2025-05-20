@@ -58,7 +58,7 @@ func main() {
 		mutex.RLock()
 		defer mutex.RUnlock()
 		metricDTOs := make([]api.Metric, 0)
-		for _, metric := range metricsCollectionService.CollectedMetrics() {additionalGauges
+		for _, metric := range metricsCollectionService.CollectedMetrics() {
 			metricDTOs = append(metricDTOs, api.MapDomainMetricToMetricDTO(metric))
 		}
 		metricJSONData, marshalingError := json.Marshal(metricDTOs)
