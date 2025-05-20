@@ -130,7 +130,7 @@ func main() {
 
 	chiRouter := chi.NewRouter()
 	apiController := api.NewController(countersService, gaugesService, healthcheckService, commonMetricsService, mutex)
-	apiController.AddInChiMux(chiRouter)
+	apiController.AddInChiMux(chiRouter, configs.Key)
 	server := &http.Server{
 		Addr:    configs.APIHost,
 		Handler: chiRouter,

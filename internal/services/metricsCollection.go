@@ -3,9 +3,12 @@ package services
 import (
 	"math/rand/v2"
 	"runtime"
+	"strconv"
 
 	"github.com/alevnyacow/metrics/internal/domain"
 	"github.com/rs/zerolog/log"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/v4/mem"
 )
 
 type AgentCounters struct {
@@ -40,8 +43,15 @@ type AgentGauges struct {
 	StackSys,
 	Sys,
 	TotalAlloc,
-	RandomValue domain.GaugeValue
+	RandomValue,
+	CPUutilization1,
+	TotalMemory,
+	FreeMemory domain.GaugeValue
 }
+
+/**
+MetricsCollectionService
+*/
 
 // MetricsCollectionService provides logic of
 // updating and storing collected metrics.
@@ -114,6 +124,25 @@ func (service *MetricsCollectionService) CollectedMetrics() []domain.Metric {
 		metrics = append(metrics, gauge.ToMetricModel())
 	}
 	return metrics
+}
+
+func (service *MetricsCollectionService) AdditionalGauges() {
+	additionalGauges := make([]domain.Gauge, 0)
+
+	virtualMemory, _ := mem.VirtualMemory()
+
+	cpuUtilization, _ := cpu.Percent(0, true)
+
+	additionalGauges = append(additionalGauges, domain.Gauge{Name: "TotalMemory", Value: domain.GaugeValue(virtualMemory.Total)})
+	additionalGauges = append(additionalGauges, domain.Gauge{Name: "FreeMemory", Value: domain.GaugeValue(virtualMemory.Available)})
+	for i, cpuPercent := range cpuUtilization {
+		additionalGauges = append(additionalGauges, domain.Gauge{
+			Name:  domain.GaugeName("CPUutilization" + strconv.Itoa(i+1)),
+			Value: domain.GaugeValue(cpuPercent),
+		})
+	}
+
+	service.gauges = append(service.gauges, additionalGauges...)
 }
 
 func (counters AgentCounters) toMetrics() []domain.Counter {

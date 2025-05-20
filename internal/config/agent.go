@@ -10,12 +10,16 @@ type AgentConfigs struct {
 	APIHost        string `env:"ADDRESS"`
 	ReportInterval uint   `env:"REPORT_INTERVAL"`
 	PollInterval   uint   `env:"POLL_INTERVAL"`
+	Key            string `env:"KEY"`
+	RateLimit      uint   `env:"RATE_LIMIT"`
 }
 
 var defaultAgentConfigs = AgentConfigs{
 	APIHost:        "localhost:8080",
 	ReportInterval: 10,
 	PollInterval:   2,
+	Key:            "",
+	RateLimit:      1,
 }
 
 // parseAgentEnvData returns parsed agent configuration data
@@ -36,12 +40,16 @@ func parseAgentArgsConfigs() AgentConfigs {
 	apiHostPointer := flag.String("a", defaultAgentConfigs.APIHost, "API host")
 	pollIntervalPointer := flag.Uint("p", defaultAgentConfigs.PollInterval, "Poll interval")
 	reportIntervalPointer := flag.Uint("r", defaultAgentConfigs.ReportInterval, "Report interval")
+	keyPointer := flag.String("k", defaultAgentConfigs.Key, "SHA Key")
+	rateLimitPointer := flag.Uint("l", defaultAgentConfigs.RateLimit, "Rate limit for backend requests")
 	flag.Parse()
 
 	return AgentConfigs{
 		APIHost:        *apiHostPointer,
 		PollInterval:   *pollIntervalPointer,
 		ReportInterval: *reportIntervalPointer,
+		Key:            *keyPointer,
+		RateLimit:      *rateLimitPointer,
 	}
 }
 
@@ -52,5 +60,7 @@ func mergeClientConfigs(envConfigs AgentConfigs, argsConfigs AgentConfigs) Agent
 		APIHost:        selectExistingString(envConfigs.APIHost, argsConfigs.APIHost),
 		ReportInterval: selectExistingUInt(envConfigs.ReportInterval, argsConfigs.ReportInterval),
 		PollInterval:   selectExistingUInt(envConfigs.PollInterval, argsConfigs.PollInterval),
+		Key:            selectExistingString(envConfigs.Key, argsConfigs.Key),
+		RateLimit:      selectExistingUInt(envConfigs.RateLimit, argsConfigs.RateLimit),
 	}
 }
