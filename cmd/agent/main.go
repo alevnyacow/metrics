@@ -13,6 +13,7 @@ import (
 	"github.com/alevnyacow/metrics/internal/hash"
 	"github.com/alevnyacow/metrics/internal/retries"
 	"github.com/alevnyacow/metrics/internal/services"
+	"github.com/alevnyacow/metrics/internal/synchronization"
 	"github.com/go-resty/resty/v2"
 	"github.com/rs/zerolog/log"
 )
@@ -37,6 +38,7 @@ func main() {
 	updateURL := api.MetricUpdateByJSONRoute(configs.APIHost)
 	metricsCollectionService := services.NewMetricsCollectionService()
 	repetetiveGoroutineCreator := newRepetetiveGoroutineCreator(&wg)
+	semaphore := synchronization.NewSemaphore(configs.RateLimit)
 
 	updatingGoroutine := repetetiveGoroutineCreator(configs.PollInterval, func() {
 		mutex.Lock()
@@ -44,11 +46,19 @@ func main() {
 		metricsCollectionService.UpdateMetrics()
 	})
 
+	additionalGauges := repetetiveGoroutineCreator(configs.PollInterval, func() {
+		mutex.Lock()
+		defer mutex.Unlock()
+		metricsCollectionService.AdditionalGauges()
+	})
+
 	sendingGoroutine := repetetiveGoroutineCreator(configs.ReportInterval, func() {
+		semaphore.Request()
+		defer semaphore.Free()
 		mutex.RLock()
 		defer mutex.RUnlock()
 		metricDTOs := make([]api.Metric, 0)
-		for _, metric := range metricsCollectionService.CollectedMetrics() {
+		for _, metric := range metricsCollectionService.CollectedMetrics() {additionalGauges
 			metricDTOs = append(metricDTOs, api.MapDomainMetricToMetricDTO(metric))
 		}
 		metricJSONData, marshalingError := json.Marshal(metricDTOs)
@@ -63,6 +73,7 @@ func main() {
 	})
 
 	go updatingGoroutine()
+	go additionalGauges()
 	go sendingGoroutine()
 
 	wg.Wait()
